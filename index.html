@@ -395,13 +395,24 @@ h1 {
   border: 1px solid var(--red-border);
 }
 .badge-asist .dot {
-  width: 7px;
-  height: 7px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
 }
-.badge-asist.activo .dot { background: var(--green); }
-.badge-asist.novedad .dot { background: var(--purple); }
-.badge-asist.sinregistro .dot { background: var(--red); }
+.badge-asist.activo .dot {
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+}
+.badge-asist.novedad .dot {
+  background: #8b5cf6;
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.8);
+}
+.badge-asist.sinregistro .dot {
+  background: #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+}
 
 /* Badges de Estado de Actividad */
 .badge-estado {
@@ -818,10 +829,10 @@ body.halloween-mode .form-control {
   <!-- Encabezado Principal Genérico (Válido para cualquier mes) -->
   <header>
     <div class="title-wrap">
-      <div class="logo-mark">EFI</div>
+      <div class="logo-mark" ondblclick="promptAdminTeamModal()" title="EFI" style="cursor:pointer;">EFI</div>
       <div>
         <h1>Gestión EFI · Tablero de Actividades en Línea</h1>
-        <div class="subtitle">Conectado en tiempo real a Supabase · Gestión Integral de Equipo</div>
+        <div class="subtitle">Gestión Integral de Equipo</div>
       </div>
     </div>
     
@@ -1153,15 +1164,36 @@ body.halloween-mode .form-control {
         <button type="button" class="btn btn-primary" onclick="addNewCollaborator()">Registrar en el Equipo</button>
       </div>
 
-      <span style="font-size:13px; font-weight:800; color:var(--text); margin-top:6px;">Miembros del Equipo:</span>
-      <div style="max-height:260px; overflow-y:auto; border-radius:10px; border:1px solid var(--border);">
-        <table id="teamManagementTable">
+      <!-- Sección Colaboradores Activos -->
+      <div style="font-size:12.5px; font-weight:800; color:#065f46; display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+        <span>👥 Colaboradores Activos (<span id="teamCountActive">0</span>)</span>
+        <span style="font-size:11px; font-weight:normal; color:var(--muted);">Visibles en el tablero principal</span>
+      </div>
+      <div style="max-height:170px; overflow-y:auto; border-radius:8px; border:1px solid var(--border); margin-top:4px;">
+        <table id="teamTableActivos">
           <thead>
             <tr>
               <th>Nombre</th>
               <th>Cargo</th>
-              <th>Estado</th>
-              <th>Acción</th>
+              <th style="width:100px;">Acción</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- Sección Colaboradores Inactivos / Retirados -->
+      <div style="font-size:12.5px; font-weight:800; color:#991b1b; display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+        <span>⏸️ Colaboradores Inactivos / Retirados (<span id="teamCountInactive">0</span>)</span>
+        <span style="font-size:11px; font-weight:normal; color:var(--muted);">Haz clic en Reactivar para volver a agregarlos</span>
+      </div>
+      <div style="max-height:150px; overflow-y:auto; border-radius:8px; border:1px solid var(--border); margin-top:4px;">
+        <table id="teamTableInactivos">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Cargo</th>
+              <th style="width:120px;">Acción</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -1506,7 +1538,7 @@ function renderDashboard() {
           '</div>' +
         '</div>' +
         '<div class="person-right">' +
-          '<span class="badge-asist ${badgeClass}"><span class="dot"></span>' + escapeHtml(badgeLabel) + '</span>' +
+          '<span class="badge-asist ' + badgeClass + '"><span class="dot"></span>' + escapeHtml(badgeLabel) + '</span>' +
           '<div style="min-width:140px; display:flex; flex-direction:column; gap:3px;">' +
             '<div style="display:flex; justify-content:space-between; font-size:11px; font-weight:800; color:var(--muted);">' +
               '<span>Avance:</span>' +
@@ -2197,6 +2229,22 @@ async function saveAgenda() {
 // ========================================================
 // 8. GESTIÓN DE EQUIPO (SOLO PARA YEISON Y CARLOS)
 // ========================================================
+function promptAdminTeamModal() {
+  if (STATE.verifiedCC === "1033693601" || STATE.verifiedCC === "80248819") {
+    openTeamModal();
+    return;
+  }
+  var cc = prompt("🔒 Acceso Administrativo para Gestión de Equipo:\nPor favor ingresa la cédula de Yeison Oyola o Carlos Cuervo:");
+  if (!cc) return;
+  cc = cc.trim();
+  if (cc === "1033693601" || cc === "80248819") {
+    STATE.verifiedCC = cc;
+    openTeamModal();
+  } else {
+    alert("⛔ Cédula no autorizada. Solo los administradores pueden gestionar el equipo.");
+  }
+}
+
 function openTeamModal() {
   var modal = document.getElementById("teamModal");
   if (modal) modal.classList.add("open");
@@ -2209,21 +2257,54 @@ function closeTeamModal() {
 }
 
 function renderTeamManagementTable() {
-  var tbody = document.querySelector("#teamManagementTable tbody");
-  if (!tbody) return;
-  tbody.innerHTML = STATE.colaboradores.map(function(c) {
-    return '<tr>' +
-      '<td style="font-weight:700;">' + escapeHtml(c.nombre) + '</td>' +
-      '<td>' + escapeHtml(c.cargo) + '</td>' +
-      '<td>' + (c.activo !== false ? '<span style="color:#059669; font-weight:800;">Activo</span>' : '<span style="color:#dc2626; font-weight:800;">Inactivo</span>') + '</td>' +
-      '<td>' +
-        '<button type="button" class="btn" style="padding:4px 8px; font-size:11px; background:' + (c.activo !== false ? '#fee2e2; color:#991b1b;' : '#ecfdf5; color:#065f46;') + '" ' +
-                'onclick="toggleColabStatus(\'' + c.cc + '\', ' + (c.activo !== false ? 'false' : 'true') + ')">' +
-          (c.activo !== false ? 'Retirar' : 'Reactivar') +
-        '</button>' +
-      '</td>' +
-    '</tr>';
-  }).join('');
+  var tbodyAct = document.querySelector("#teamTableActivos tbody");
+  var tbodyInact = document.querySelector("#teamTableInactivos tbody");
+  
+  var activos = STATE.colaboradores.filter(function(c) { return c.activo !== false; });
+  var inactivos = STATE.colaboradores.filter(function(c) { return c.activo === false; });
+
+  var countActEl = document.getElementById("teamCountActive");
+  var countInactEl = document.getElementById("teamCountInactive");
+  if (countActEl) countActEl.textContent = activos.length;
+  if (countInactEl) countInactEl.textContent = inactivos.length;
+
+  if (tbodyAct) {
+    if (activos.length === 0) {
+      tbodyAct.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--muted); padding:10px;">No hay colaboradores activos en este momento.</td></tr>';
+    } else {
+      tbodyAct.innerHTML = activos.map(function(c) {
+        return '<tr>' +
+          '<td style="font-weight:700;">' + escapeHtml(c.nombre) + '</td>' +
+          '<td>' + escapeHtml(c.cargo) + '</td>' +
+          '<td style="text-align:center;">' +
+            '<button type="button" class="btn" style="padding:4px 10px; font-size:11px; background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; font-weight:700;" ' +
+                    'onclick="toggleColabStatus(\'' + c.cc + '\', false)">' +
+              '🚫 Retirar' +
+            '</button>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+    }
+  }
+
+  if (tbodyInact) {
+    if (inactivos.length === 0) {
+      tbodyInact.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--muted); padding:10px;">No hay colaboradores inactivos.</td></tr>';
+    } else {
+      tbodyInact.innerHTML = inactivos.map(function(c) {
+        return '<tr>' +
+          '<td style="font-weight:700; color:#64748b;">' + escapeHtml(c.nombre) + '</td>' +
+          '<td style="color:#64748b;">' + escapeHtml(c.cargo) + '</td>' +
+          '<td style="text-align:center;">' +
+            '<button type="button" class="btn" style="padding:4px 10px; font-size:11px; background:#dcfce7; color:#15803d; border:1px solid #86efac; font-weight:700;" ' +
+                    'onclick="toggleColabStatus(\'' + c.cc + '\', true)">' +
+              '🟢 Reactivar' +
+            '</button>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+    }
+  }
 }
 
 async function addNewCollaborator() {
@@ -2251,7 +2332,7 @@ async function addNewCollaborator() {
       STATE.colaboradores.push({ nombre: name, cc: cc, cargo: cargo, telefono: phone, activo: true });
     }
 
-    alert("✅ Colaborador agregado con éxito!");
+    alert("✅ ¡Colaborador registrado con éxito en el equipo!");
     document.getElementById("newColabName").value = "";
     document.getElementById("newColabCC").value = "";
     document.getElementById("newColabCargo").value = "";
@@ -2264,18 +2345,26 @@ async function addNewCollaborator() {
 }
 
 async function toggleColabStatus(cc, newStatus) {
+  var c = STATE.colaboradores.find(function(x) { return x.cc === cc; });
+  var nombre = c ? c.nombre : cc;
+  var accion = newStatus ? "REACTIVAR" : "RETIRAR";
+
+  if (!confirm("¿Estás seguro de " + accion + " a " + nombre + " del equipo?")) {
+    return;
+  }
+
   try {
     if (sbClient) {
       var res = await sbClient.from("colaboradores").update({ activo: newStatus }).eq("cc", cc);
       if (res.error) throw res.error;
       await loadAllDataFromSupabase();
     } else {
-      var c = STATE.colaboradores.find(function(x) { return x.cc === cc; });
       if (c) c.activo = newStatus;
       populateColabSelector();
       renderDashboard();
     }
     renderTeamManagementTable();
+    alert(newStatus ? ("✅ ¡" + nombre + " ha sido REACTIVADO con éxito!") : ("⚠️ " + nombre + " ha sido retirado del equipo."));
   } catch (err) {
     alert("Error al cambiar estado: " + err.message);
   }
