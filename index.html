@@ -1,0 +1,2443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>TABLERO • Gestión EFI en Línea</title>
+
+<!-- Librerías Locales: Supabase y Generador de PDF -->
+<script src="supabase.min.js"></script>
+<script>
+if (typeof supabase === 'undefined') {
+  document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>');
+}
+</script>
+<script src="jspdf.umd.min.js"></script>
+<script src="jspdf.plugin.autotable.min.js"></script>
+
+<style>
+:root {
+  --bg: #f3f4f8;
+  --panel: #ffffff;
+  --border: #dcdfe8;
+  --text: #1e293b;
+  --muted: #64748b;
+  --accent: #6b2fb8;
+  --accent-2: #481d80;
+  --accent-3: #8e58da;
+  --green: #10b981;
+  --green-bg: #ecfdf5;
+  --green-border: #a7f3d0;
+  --amber: #f59e0b;
+  --amber-bg: #fffbeb;
+  --amber-border: #fde68a;
+  --red: #ef4444;
+  --red-bg: #fef2f2;
+  --red-border: #fecaca;
+  --purple: #8b5cf6;
+  --purple-bg: #f5f3ff;
+  --purple-border: #ddd6fe;
+  --shadow: rgba(15, 23, 42, 0.08);
+  --shadow-lg: rgba(15, 23, 42, 0.15);
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", sans-serif;
+  color: var(--text);
+  background: linear-gradient(180deg, #f8fafc 0%, var(--bg) 100%);
+  line-height: 1.4;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 16px 16px 60px;
+}
+
+/* Encabezado */
+header {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent) 60%, var(--accent-3) 100%);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 25px var(--shadow);
+  position: sticky;
+  top: 10px;
+  z-index: 50;
+  backdrop-filter: blur(8px);
+}
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.logo-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 20px;
+  color: var(--accent);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  flex-shrink: 0;
+}
+h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+.subtitle {
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Botones */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 15px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.25);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+}
+.btn-primary {
+  background: #ffffff;
+  color: var(--accent-2);
+  border: none;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  font-size: 13.5px;
+  font-weight: 900;
+}
+.btn-primary:hover {
+  background: #f8fafc;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+.btn-pdf {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #fff;
+  border: none;
+  font-weight: 800;
+}
+.btn-pdf:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+.btn-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  border: none;
+}
+.btn-purple {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: #fff;
+  border: none;
+}
+.btn-sm-add {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  transition: all 0.15s;
+}
+.btn-sm-add:hover {
+  background: var(--accent-2);
+  transform: translateY(-1px);
+}
+
+/* Indicador de conexión */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.pulse-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7); }
+  70% { box-shadow: 0 0 0 8px rgba(52, 211, 153, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+}
+
+/* Semáforo Superior */
+.attendance-banner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.semaforo-card {
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 14px var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.semaforo-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px var(--shadow-lg);
+}
+.semaforo-card.active-filter {
+  outline: 2px solid var(--accent);
+}
+.semaforo-info {
+  display: flex;
+  flex-direction: column;
+}
+.semaforo-title {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.semaforo-count {
+  font-size: 26px;
+  font-weight: 900;
+  margin-top: 2px;
+}
+.semaforo-hint {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.semaforo-green { border-left: 6px solid var(--green); }
+.semaforo-green .semaforo-title { color: #047857; }
+.semaforo-purple { border-left: 6px solid var(--purple); }
+.semaforo-purple .semaforo-title { color: #6d28d9; }
+.semaforo-red { border-left: 6px solid var(--red); }
+.semaforo-red .semaforo-title { color: #b91c1c; }
+.semaforo-blue { border-left: 6px solid var(--accent); }
+.semaforo-blue .semaforo-title { color: var(--accent); }
+
+/* Grid de KPIs */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+}
+.kpi {
+  grid-column: span 3;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: 0 4px 14px var(--shadow);
+}
+.kpi .label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+.kpi .value {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--accent-2);
+}
+.kpi .hint {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.progress-bar-bg {
+  height: 8px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #10b981, #059669);
+  transition: width 0.4s ease;
+}
+
+/* Card Principal */
+.card {
+  grid-column: span 12;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: 0 6px 18px var(--shadow);
+  margin-top: 14px;
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: -16px -16px 14px;
+  padding: 12px 18px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: linear-gradient(90deg, var(--accent), var(--accent-3));
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+}
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.search-box, .date-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+.search-box { flex: 1; min-width: 280px; }
+.search-box input, .date-box select {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+/* Badges de Asistencia y Estado */
+.badge-asist {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.badge-asist.activo {
+  background: var(--green-bg);
+  color: #065f46;
+  border: 1px solid var(--green-border);
+}
+.badge-asist.novedad {
+  background: var(--purple-bg);
+  color: #5b21b6;
+  border: 1px solid var(--purple-border);
+}
+.badge-asist.sinregistro {
+  background: var(--red-bg);
+  color: #991b1b;
+  border: 1px solid var(--red-border);
+}
+.badge-asist .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.badge-asist.activo .dot { background: var(--green); }
+.badge-asist.novedad .dot { background: var(--purple); }
+.badge-asist.sinregistro .dot { background: var(--red); }
+
+/* Badges de Estado de Actividad */
+.badge-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.estado-finalizado { background: #e8f7ee; color: #1e7e34; border: 1px solid #a3e635; }
+.estado-progreso { background: #fefce8; color: #854d0e; border: 1px solid #fde047; }
+.estado-pendiente { background: #fff7ed; color: #9a3412; border: 1px solid #fdba74; }
+.estado-sin { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+/* Acordeón de Colaboradores */
+.person-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+details.person {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #ffffff;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+  transition: all 0.2s ease;
+}
+details.person:hover {
+  box-shadow: 0 6px 16px rgba(0,0,0,0.07);
+}
+details.person summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  background: #f8fafc;
+  border-bottom: 1px solid transparent;
+  flex-wrap: wrap;
+  user-select: none;
+}
+details.person[open] summary {
+  background: linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%);
+  border-bottom-color: #ddd6fe;
+}
+details.person summary::-webkit-details-marker { display: none; }
+.person-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-3), var(--accent));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 15px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+.person-title {
+  display: flex;
+  flex-direction: column;
+}
+.person-name {
+  font-weight: 900;
+  font-size: 14px;
+  color: var(--accent-2);
+}
+.person-sub {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+}
+.person-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.person-body {
+  padding: 16px 18px;
+  background: #ffffff;
+}
+
+/* Tablas */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+th {
+  background: #f8fafc;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--accent-2);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+td {
+  padding: 11px 14px;
+  font-size: 13px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fbfcfe; }
+
+/* Modales */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 99999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal-overlay.open {
+  display: flex !important;
+}
+.modal-content {
+  background: #ffffff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 760px;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  animation: modalIn 0.25s ease;
+}
+@keyframes modalIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.modal-header {
+  padding: 16px 22px;
+  background: linear-gradient(135deg, var(--accent-2), var(--accent));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 16px 16px 0 0;
+}
+.modal-header h3 { margin: 0; font-size: 16px; font-weight: 800; }
+.modal-close {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-close:hover { background: rgba(255,255,255,0.35); }
+.modal-body { padding: 20px 22px; display: flex; flex-direction: column; gap: 16px; }
+
+/* Estilos de Formulario */
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: 13px; font-weight: 700; color: var(--text); }
+.form-control {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-size: 13.5px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+.form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(107, 47, 184, 0.15); }
+
+/* Banners de Administradores */
+.role-banner {
+  padding: 14px 16px;
+  border-radius: 10px;
+  display: none;
+  font-size: 13px;
+  font-weight: 700;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.role-banner.carlos {
+  background: #fefce8;
+  border: 1px solid #fde047;
+  color: #854d0e;
+  display: flex !important;
+}
+.role-banner.yeison {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  display: flex !important;
+}
+
+/* Bandeja de Tareas Recibidas (Aceptar / Rechazar) */
+.inbox-card {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.inbox-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+}
+.btn-accept {
+  background: #10b981;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.btn-accept:hover { background: #059669; }
+.btn-reject {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.btn-reject:hover { background: #dc2626; }
+
+/* Tarjeta Dinámica de Tarea */
+.dynamic-task-card {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  transition: all 0.2s ease;
+}
+.dynamic-task-card.completed {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+}
+.dynamic-task-card.in-progress {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+.dynamic-task-card.pending {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+.task-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.task-card-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--accent-2);
+}
+.btn-remove-task {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+.btn-remove-task:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+.task-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+.status-btn-group {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.status-btn {
+  padding: 5px 10px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.status-btn:hover { background: #f1f5f9; }
+.status-btn.selected-fin {
+  background: #10b981;
+  color: #fff;
+  border-color: #059669;
+}
+.status-btn.selected-pro {
+  background: #f59e0b;
+  color: #fff;
+  border-color: #d97706;
+}
+.status-btn.selected-pen {
+  background: #ef4444;
+  color: #fff;
+  border-color: #dc2626;
+}
+
+/* Tema Halloween */
+body.halloween-mode {
+  --bg: #09090b;
+  --panel: #141416;
+  --border: #ea580c;
+  --text: #f4f4f5;
+  --muted: #a1a1aa;
+  --accent: #ea580c;
+  --accent-2: #c2410c;
+  --accent-3: #f97316;
+  --shadow: rgba(0,0,0,0.4);
+}
+body.halloween-mode .card, 
+body.halloween-mode .kpi,
+body.halloween-mode details.person,
+body.halloween-mode .semaforo-card,
+body.halloween-mode .search-box, 
+body.halloween-mode .date-box,
+body.halloween-mode table,
+body.halloween-mode .modal-content,
+body.halloween-mode .dynamic-task-card,
+body.halloween-mode .inbox-card {
+  background: #141416;
+  color: #f4f4f5;
+}
+body.halloween-mode details.person summary {
+  background: #18181b;
+}
+body.halloween-mode details.person[open] summary {
+  background: linear-gradient(180deg, #3f1a04 0%, #2c1203 100%);
+}
+body.halloween-mode th {
+  background: #27160c;
+  color: #fdba74;
+}
+body.halloween-mode td {
+  border-color: #27272a;
+}
+body.halloween-mode .form-control {
+  background: #1f1f23;
+  color: #f4f4f5;
+  border-color: #3f3f46;
+}
+
+/* Responsive */
+@media(max-width: 980px) {
+  .kpi { grid-column: span 6; }
+  header { flex-direction: column; align-items: stretch; }
+  .header-actions { justify-content: flex-start; }
+}
+@media(max-width: 640px) {
+  .kpi { grid-column: span 12; }
+  .semaforo-banner { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Encabezado Principal Genérico (Válido para cualquier mes) -->
+  <header>
+    <div class="title-wrap">
+      <div class="logo-mark">EFI</div>
+      <div>
+        <h1>Gestión EFI · Tablero de Actividades en Línea</h1>
+        <div class="subtitle">Conectado en tiempo real a Supabase · Gestión Integral de Equipo</div>
+      </div>
+    </div>
+    
+    <div class="header-actions">
+      <div class="status-pill" id="realtimeStatus" title="Escuchando cambios en vivo">
+        <span class="pulse-dot"></span>
+        <span id="realtimeText">En línea</span>
+      </div>
+
+      <!-- BOTÓN PRINCIPAL: ABRIR AGENDA CON CÉDULA -->
+      <button type="button" class="btn btn-primary" id="openAgendaModalBtn" onclick="openAgendaModal()">
+        📝 Publicar / Editar Mi Agenda
+      </button>
+
+      <!-- BOTÓN DESCARGAR INFORME PDF -->
+      <button type="button" class="btn btn-pdf" id="downloadPdfBtn" onclick="generatePdfReport()" title="Descargar informe oficial en PDF">
+        📄 Descargar Informe PDF
+      </button>
+
+      <button type="button" class="btn" id="themeToggleBtn" onclick="toggleTheme()">
+        🎃 Halloween
+      </button>
+    </div>
+  </header>
+
+  <!-- Semáforo de Asistencia Superior -->
+  <div class="attendance-banner">
+    <div class="semaforo-card semaforo-blue" id="btnFilterAll" onclick="filterByAttendance('')">
+      <div class="semaforo-info">
+        <span class="semaforo-title">👥 Equipo Total</span>
+        <span class="semaforo-count" id="countTotal">10</span>
+        <span class="semaforo-hint">Colaboradores registrados</span>
+      </div>
+      <span style="font-size:28px;">📊</span>
+    </div>
+
+    <div class="semaforo-card semaforo-green" id="btnFilterActivos" onclick="filterByAttendance('ACTIVO')">
+      <div class="semaforo-info">
+        <span class="semaforo-title">🟢 Activos Hoy</span>
+        <span class="semaforo-count" id="countActivos">—</span>
+        <span class="semaforo-hint">Con agenda publicada</span>
+      </div>
+      <span style="font-size:28px;">✅</span>
+    </div>
+
+    <div class="semaforo-card semaforo-purple" id="btnFilterNovedades" onclick="filterByAttendance('NOVEDAD')">
+      <div class="semaforo-info">
+        <span class="semaforo-title">🟣 Novedades</span>
+        <span class="semaforo-count" id="countNovedades">—</span>
+        <span class="semaforo-hint">Vacaciones / Permisos</span>
+      </div>
+      <span style="font-size:28px;">🏖️</span>
+    </div>
+
+    <div class="semaforo-card semaforo-red" id="btnFilterPendientes" onclick="filterByAttendance('SIN REGISTRO')">
+      <div class="semaforo-info">
+        <span class="semaforo-title">🔴 Sin Registro</span>
+        <span class="semaforo-count" id="countSinRegistro">—</span>
+        <span class="semaforo-hint">Pendientes por publicar</span>
+      </div>
+      <span style="font-size:28px;">⏳</span>
+    </div>
+  </div>
+
+  <!-- Tarjetas KPI -->
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="label">Colaboradores Activos</div>
+      <div class="value" id="kpiColabsCount">10</div>
+      <div class="hint" id="kpiColabsSub">Cargando datos...</div>
+    </div>
+
+    <div class="kpi">
+      <div class="label">Asistencia de la Fecha</div>
+      <div class="value" id="kpiAsistenciaPct">—%</div>
+      <div class="hint" id="kpiAsistenciaSub">— de — colaboradores</div>
+    </div>
+
+    <div class="kpi">
+      <div class="label">Actividades Registradas</div>
+      <div class="value" id="kpiActividadesCount">—</div>
+      <div class="hint">Total tareas de la fecha</div>
+    </div>
+
+    <div class="kpi">
+      <div class="label">Avance del Equipo</div>
+      <div class="value" id="kpiAvancePct">—%</div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="kpiAvanceBar" style="width:0%"></div>
+      </div>
+      <div class="hint" id="kpiAvanceSub">Promedio ponderado</div>
+    </div>
+  </div>
+
+  <!-- Vista Detallada de Actividades -->
+  <section class="card">
+    <div class="card-header">
+      <span>Detalle de Actividades por Colaborador</span>
+      <span id="currentDateBadge" style="font-size:12px; opacity:0.9;">Fecha: —</span>
+    </div>
+
+    <div class="toolbar">
+      <div class="search-box">
+        <span>🔎</span>
+        <input type="text" id="globalSearchInput" placeholder="Buscar por colaborador, cargo o actividad..."/>
+      </div>
+
+      <div class="date-box" title="Cambiar fecha a consultar">
+        <span>📅</span>
+        <select id="dateSelect" aria-label="Fecha a consultar"></select>
+      </div>
+
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="btn" style="background:#e2e8f0; color:#334155; border:none;" onclick="toggleAllAccordions(true)">Expandir todo</button>
+        <button type="button" class="btn" style="background:#e2e8f0; color:#334155; border:none;" onclick="toggleAllAccordions(false)">Contraer todo</button>
+      </div>
+    </div>
+
+    <!-- Lista de Colaboradores (CCs OCULTAS) -->
+    <div class="person-list" id="collaboratorsContainer">
+      <div style="text-align:center; padding:40px; color:var(--muted);">
+        Cargando colaboradores y actividades desde Supabase...
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL: PUBLICAR / EDITAR AGENDA (PROTEGIDO POR CÉDULA)   -->
+<!-- ======================================================== -->
+<div class="modal-overlay" id="agendaModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modalTitle">📝 Publicar / Editar Mi Agenda Diaria</h3>
+      <button type="button" class="modal-close" onclick="closeAgendaModal()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Banner para Carlos Cuervo (Alerta Ejecutiva y Gestión) -->
+      <div class="role-banner" id="carlosBanner">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:26px;">👔</span>
+          <div>
+            <strong>¡Bienvenido Carlos Cuervo (Coordinador EFI)!</strong>
+            <div style="font-size:12px; font-weight:normal; margin-top:2px;" id="carlosExecutiveSummary">
+              Cargando pendientes del equipo...
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-purple" onclick="openTeamModal()">
+          ⚙️ Gestionar Equipo
+        </button>
+      </div>
+
+      <!-- Banner para Yeison Oyola (Administrador y Gestión) -->
+      <div class="role-banner" id="yeisonBanner">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:26px;">⚡</span>
+          <div>
+            <strong>¡Bienvenido Yeison Oyola (Administrador del Sistema)!</strong>
+            <div style="font-size:12px; font-weight:normal; margin-top:2px;">
+              Edición universal y gestión de colaboradores activadas.
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-purple" onclick="openTeamModal()">
+          ⚙️ Gestionar Equipo
+        </button>
+      </div>
+
+      <!-- Paso 1: Selección y Validación de Identidad -->
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+        <div class="form-group">
+          <label class="form-label">Colaborador:</label>
+          <select class="form-control" id="modalColabSelect" onchange="onColabSelected()">
+            <option value="">-- Selecciona tu nombre --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Fecha:</label>
+          <input type="date" class="form-control" id="modalDateInput" onchange="loadColabDayData()"/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Tu Cédula de Ciudadanía (Confirmación requerida para editar):</label>
+        <div style="display:flex; gap:8px;">
+          <input type="password" class="form-control" id="modalCCInput" placeholder="Digita tu número de cédula sin puntos" maxlength="15"/>
+          <button type="button" class="btn btn-primary" onclick="verifyIdentity()">Confirmar Identidad</button>
+        </div>
+        <span id="ccValidationMsg" style="font-size:12px; font-weight:700;"></span>
+      </div>
+
+      <!-- Sección Desbloqueable de Actividades (Solo tras validar Cédula) -->
+      <div id="activitiesFormSection" style="display:none; flex-direction:column; gap:16px;">
+        
+        <!-- BANDEJA DE TAREAS RECIBIDAS (Aceptar / Rechazar) -->
+        <div id="inboxTasksSection" style="display:none; flex-direction:column; gap:8px;">
+          <div style="font-size:13px; font-weight:800; color:#b45309; display:flex; align-items:center; gap:6px;">
+            <span>🔔 Tareas Recibidas de tus Compañeros / Coordinación:</span>
+          </div>
+          <div id="inboxTasksContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+
+        <!-- Alerta de Tareas Existentes del Colaborador -->
+        <div id="colabTasksAlert" style="padding:10px 14px; border-radius:10px; background:#f8fafc; border:1px solid var(--border); font-size:12.5px; font-weight:700; display:flex; justify-content:space-between; align-items:center;">
+          <span id="colabTasksSummary">Tareas registradas: 0</span>
+          <span id="colabAdvanceBadge" class="badge-estado estado-sin">Avance: 0%</span>
+        </div>
+
+        <!-- Interruptor de Novedad -->
+        <div style="padding:12px 14px; border-radius:10px; background:var(--purple-bg); border:1px solid var(--purple-border); display:flex; flex-direction:column; gap:8px;">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:800; color:#5b21b6; font-size:13px;">
+            <input type="checkbox" id="modalNovedadCheck" onchange="toggleNovedadField()"/>
+            <span>🏖️ Reportar Novedad Hoy (Vacaciones, Incapacidad, Permiso, etc.)</span>
+          </label>
+          <div id="novedadDetailWrap" style="display:none;">
+            <input type="text" class="form-control" id="modalNovedadText" placeholder="Detalle de la novedad (Ej: Vacaciones aprobadas, Permiso médico...)"/>
+          </div>
+        </div>
+
+        <!-- Bloque Mañana Dinámico -->
+        <div style="padding:14px; border:1px solid var(--border); border-radius:12px; background:#f8fafc; display:flex; flex-direction:column; gap:12px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+            <span style="font-size:13.5px; font-weight:800; color:var(--accent-2);">🌅 Mañana (08:00 AM - 01:00 PM)</span>
+            <button type="button" class="btn-sm-add" onclick="addMorningTask()">➕ Agregar otra tarea AM</button>
+          </div>
+          <div id="morningTasksList" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+
+        <!-- Bloque Tarde Dinámico -->
+        <div style="padding:14px; border:1px solid var(--border); border-radius:12px; background:#f8fafc; display:flex; flex-direction:column; gap:12px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+            <span style="font-size:13.5px; font-weight:800; color:var(--accent-2);">🌇 Tarde (02:00 PM - 05:00 PM)</span>
+            <button type="button" class="btn-sm-add" onclick="addAfternoonTask()">➕ Agregar otra tarea PM</button>
+          </div>
+          <div id="afternoonTasksList" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+
+        <!-- Barra de Progreso en Vivo en el Formulario -->
+        <div style="padding:10px 14px; border-radius:10px; background:#f8fafc; border:1px solid var(--border);">
+          <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:800; margin-bottom:4px;">
+            <span id="formProgressMsg">Ingresa tus tareas del día</span>
+            <span id="formProgressPct">0%</span>
+          </div>
+          <div class="progress-bar-bg" style="height:10px;">
+            <div class="progress-bar-fill" id="formProgressBar" style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- MÓDULO: ASIGNAR / ENVIAR TAREA A UN COMPAÑERO  -->
+        <!-- ============================================== -->
+        <div style="padding:14px; border:1px solid #bfdbfe; border-radius:12px; background:#eff6ff; display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <span style="font-size:13px; font-weight:800; color:#1e40af;">📤 Enviar / Asignar Tarea a un Compañero</span>
+            <span style="font-size:11px; color:#3b82f6; font-weight:700;">Colaboración en Equipo</span>
+          </div>
+          
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div class="form-group">
+              <label class="form-label" style="font-size:12px;">Destinatario:</label>
+              <select class="form-control" id="assignTargetColabSelect" style="font-size:12.5px;">
+                <option value="">-- Selecciona el compañero --</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" style="font-size:12px;">Horario:</label>
+              <select class="form-control" id="assignScheduleSelect" style="font-size:12.5px;">
+                <option value="08:00AM - 01:00PM">🌅 Mañana (08:00 AM - 01:00 PM)</option>
+                <option value="02:00PM - 05:00PM">🌇 Tarde (02:00 PM - 05:00 PM)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <textarea class="form-control" id="assignTaskDetail" rows="2" placeholder="Describe la tarea que le deseas enviar o delegar a tu compañero..."></textarea>
+          </div>
+
+          <!-- Opción especial para Yeison o Carlos: Asignación directa -->
+          <div id="adminDirectAssignWrap" style="display:none;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:12px; font-weight:800; color:#854d0e;">
+              <input type="checkbox" id="adminDirectAssignCheck"/>
+              <span>⚡ Asignación Directa de Coordinación (sin requerir aceptación previa)</span>
+            </label>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end;">
+            <button type="button" class="btn btn-primary" style="background:#2563eb; color:#fff;" onclick="sendAssignedTask()">
+              🚀 Enviar Tarea al Colaborador
+            </button>
+          </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:8px;">
+          <button type="button" class="btn" style="background:#cbd5e1; color:#334155; border:none;" onclick="closeAgendaModal()">Cancelar</button>
+          <button type="button" class="btn btn-success" id="saveAgendaBtn" onclick="saveAgenda()">
+            💾 Guardar y Publicar en Línea
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL: GESTIÓN DE EQUIPO (SOLO PARA YEISON Y CARLOS)     -->
+<!-- ======================================================== -->
+<div class="modal-overlay" id="teamModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>⚙️ Gestión de Colaboradores (Exclusivo Administradores)</h3>
+      <button type="button" class="modal-close" onclick="closeTeamModal()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div style="padding:14px; border-radius:12px; background:#f8fafc; border:1px solid var(--border); display:flex; flex-direction:column; gap:10px;">
+        <span style="font-size:13px; font-weight:800; color:var(--accent-2);">➕ Agregar Nuevo Colaborador</span>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+          <input type="text" class="form-control" id="newColabName" placeholder="Nombre Completo"/>
+          <input type="text" class="form-control" id="newColabCC" placeholder="Cédula (CC)"/>
+          <input type="text" class="form-control" id="newColabCargo" placeholder="Cargo (GESTOR, CATALIZADOR, etc.)"/>
+          <input type="text" class="form-control" id="newColabPhone" placeholder="Teléfono"/>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="addNewCollaborator()">Registrar en el Equipo</button>
+      </div>
+
+      <span style="font-size:13px; font-weight:800; color:var(--text); margin-top:6px;">Miembros del Equipo:</span>
+      <div style="max-height:260px; overflow-y:auto; border-radius:10px; border:1px solid var(--border);">
+        <table id="teamManagementTable">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Cargo</th>
+              <th>Estado</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========================================================
+// 1. CONFIGURACIÓN Y CLIENTE SUPABASE (CON ALIAS SEGURO)
+// ========================================================
+var SUPABASE_URL = "https://jbwjbyvfcekwbtogsaip.supabase.co";
+var SUPABASE_ANON_KEY = "sb_publishable_4CS_QuUM_Wh07Eb6uwjCSQ_FY11G7ae";
+
+var sbClient = null;
+try {
+  if (typeof supabase !== 'undefined' && supabase.createClient) {
+    sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } else if (window.supabase && window.supabase.createClient) {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch (e) {
+  console.warn("Advertencia Supabase:", e);
+}
+
+// Cédulas de administradores autorizados
+var CC_CARLOS_CUERVO = "80248819";
+var CC_YEISON_OYOLA = "1033693601";
+
+// Colaboradores iniciales pre-cargados
+var INITIAL_COLABS = [
+  { cc: "80248819", nombre: "CARLOS CUERVO", cargo: "COORDINADOR", activo: true },
+  { cc: "1013637300", nombre: "MARTHA SANCHEZ", cargo: "GESTOR", activo: true },
+  { cc: "1022962222", nombre: "MONICA SANCHEZ", cargo: "GESTOR", activo: true },
+  { cc: "80110200", nombre: "CAMILO VARGAS", cargo: "GESTOR", activo: true },
+  { cc: "1015442238", nombre: "PAULA OSORIO", cargo: "CATALIZADOR", activo: true },
+  { cc: "1000456129", nombre: "SOFIA ARANZAZU", cargo: "CATALIZADOR", activo: true },
+  { cc: "1019096832", nombre: "VIVIANA MORENO", cargo: "CATALIZADOR", activo: true },
+  { cc: "1033693601", nombre: "YEISON OYOLA", cargo: "APRENDIZ", activo: true },
+  { cc: "1023867730", nombre: "VALENTINA ALVAREZ", cargo: "APRENDIZ", activo: true },
+  { cc: "1022420272", nombre: "CRISTIAN VEGA", cargo: "ENTRENADOR COMERCIAL", activo: true }
+];
+
+// Estado global de la aplicación
+var STATE = {
+  colaboradores: INITIAL_COLABS,
+  asistencias: [],
+  actividades: [],
+  tareasAsignadas: [],
+  fechas: [],
+  currentDate: "",
+  selectedAttendanceFilter: "",
+  currentUserRole: null, // 'carlos', 'yeison', 'colab'
+  verifiedCC: null,
+  activeColabCC: null,
+  dynamicTasks: {
+    morning: [],
+    afternoon: []
+  }
+};
+
+// ========================================================
+// 2. INICIALIZACIÓN DINÁMICA (CUALQUIER MES / FECHA)
+// ========================================================
+document.addEventListener("DOMContentLoaded", function() {
+  setupTheme();
+  setupDateDetection();
+  populateColabSelector();
+  
+  generateDynamicDates();
+  populateDateSelector();
+  renderDashboard();
+
+  if (sbClient) {
+    setupRealtime();
+    loadAllDataFromSupabase();
+  } else {
+    document.getElementById("realtimeText").textContent = "Modo local";
+  }
+});
+
+function setupDateDetection() {
+  var today = new Date();
+  var yyyy = today.getFullYear();
+  var mm = String(today.getMonth() + 1).padStart(2, '0');
+  var dd = String(today.getDate()).padStart(2, '0');
+  STATE.currentDate = yyyy + "-" + mm + "-" + dd;
+  
+  var dateInput = document.getElementById("modalDateInput");
+  if (dateInput) dateInput.value = STATE.currentDate;
+}
+
+function generateDynamicDates() {
+  var dateSet = new Set();
+  var parts = STATE.currentDate.split("-");
+  var year = parseInt(parts[0], 10);
+  var month = parseInt(parts[1], 10);
+  var daysInMonth = new Date(year, month, 0).getDate();
+
+  for (var d = 1; d <= daysInMonth; d++) {
+    dateSet.add(year + "-" + String(month).padStart(2, '0') + "-" + String(d).padStart(2, '0'));
+  }
+
+  STATE.actividades.forEach(function(a) { if (a.fecha) dateSet.add(a.fecha); });
+  STATE.asistencias.forEach(function(a) { if (a.fecha) dateSet.add(a.fecha); });
+  dateSet.add(STATE.currentDate);
+
+  STATE.fechas = Array.from(dateSet).sort();
+}
+
+async function loadAllDataFromSupabase() {
+  if (!sbClient) return;
+  try {
+    document.getElementById("realtimeText").textContent = "Sincronizando...";
+
+    var resColabs = await sbClient.from("colaboradores").select("*").order("nombre", { ascending: true });
+    if (resColabs.data && resColabs.data.length > 0) {
+      STATE.colaboradores = resColabs.data;
+    }
+
+    var resAsist = await sbClient.from("asistencia").select("*");
+    if (resAsist.data) STATE.asistencias = resAsist.data;
+
+    var resActs = await sbClient.from("actividades").select("*").order("fecha", { ascending: true });
+    if (resActs.data) STATE.actividades = resActs.data;
+
+    var resAsig = await sbClient.from("tareas_asignadas").select("*");
+    if (resAsig.data) STATE.tareasAsignadas = resAsig.data;
+
+    generateDynamicDates();
+    populateDateSelector();
+    populateColabSelector();
+    renderDashboard();
+
+    if (STATE.verifiedCC) {
+      checkReceivedTasks(STATE.activeColabCC || STATE.verifiedCC);
+    }
+
+    document.getElementById("realtimeText").textContent = "En línea";
+  } catch (err) {
+    console.error("Error Supabase:", err);
+    document.getElementById("realtimeText").textContent = "En línea (cache)";
+  }
+}
+
+function setupRealtime() {
+  if (!sbClient) return;
+  try {
+    sbClient
+      .channel("cambios-tablero-efi")
+      .on("postgres_changes", { event: "*", schema: "public", table: "actividades" }, function(payload) {
+        handleRealtimeUpdate("actividades", payload);
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "asistencia" }, function(payload) {
+        handleRealtimeUpdate("asistencia", payload);
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "colaboradores" }, function(payload) {
+        handleRealtimeUpdate("colaboradores", payload);
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "tareas_asignadas" }, function(payload) {
+        handleRealtimeUpdate("tareas_asignadas", payload);
+      })
+      .subscribe();
+  } catch (e) {
+    console.warn("Realtime no disponible:", e);
+  }
+}
+
+function handleRealtimeUpdate(table, payload) {
+  var eventType = payload.eventType;
+  var newRec = payload.new;
+  var oldRec = payload.old;
+
+  if (table === "actividades") {
+    if (eventType === "INSERT") {
+      STATE.actividades.push(newRec);
+    } else if (eventType === "UPDATE") {
+      var idx = STATE.actividades.findIndex(function(a) { return a.id === newRec.id; });
+      if (idx !== -1) STATE.actividades[idx] = newRec;
+      else STATE.actividades.push(newRec);
+    } else if (eventType === "DELETE") {
+      STATE.actividades = STATE.actividades.filter(function(a) { return a.id !== oldRec.id; });
+    }
+  } else if (table === "asistencia") {
+    if (eventType === "INSERT") {
+      STATE.asistencias.push(newRec);
+    } else if (eventType === "UPDATE") {
+      var idxA = STATE.asistencias.findIndex(function(a) { return a.id === newRec.id; });
+      if (idxA !== -1) STATE.asistencias[idxA] = newRec;
+      else STATE.asistencias.push(newRec);
+    }
+  } else if (table === "colaboradores") {
+    if (eventType === "INSERT") {
+      STATE.colaboradores.push(newRec);
+    } else if (eventType === "UPDATE") {
+      var idxC = STATE.colaboradores.findIndex(function(c) { return c.cc === newRec.cc; });
+      if (idxC !== -1) STATE.colaboradores[idxC] = newRec;
+    }
+    populateColabSelector();
+  } else if (table === "tareas_asignadas") {
+    if (eventType === "INSERT") {
+      STATE.tareasAsignadas.push(newRec);
+    } else if (eventType === "UPDATE") {
+      var idxT = STATE.tareasAsignadas.findIndex(function(t) { return t.id === newRec.id; });
+      if (idxT !== -1) STATE.tareasAsignadas[idxT] = newRec;
+      else STATE.tareasAsignadas.push(newRec);
+    }
+    if (STATE.verifiedCC) {
+      checkReceivedTasks(STATE.activeColabCC || STATE.verifiedCC);
+    }
+  }
+  renderDashboard();
+}
+
+// ========================================================
+// 3. RENDERIZADO DEL TABLERO (CÉDULAS 100% OCULTAS)
+// ========================================================
+function populateDateSelector() {
+  var select = document.getElementById("dateSelect");
+  if (!select) return;
+  select.innerHTML = STATE.fechas.map(function(f) {
+    return '<option value="' + f + '" ' + (f === STATE.currentDate ? 'selected' : '') + '>' + f + '</option>';
+  }).join('');
+
+  select.onchange = function(e) {
+    STATE.currentDate = e.target.value;
+    var mDate = document.getElementById("modalDateInput");
+    if (mDate) mDate.value = STATE.currentDate;
+    renderDashboard();
+  };
+}
+
+function populateColabSelector() {
+  var select = document.getElementById("modalColabSelect");
+  var assignSelect = document.getElementById("assignTargetColabSelect");
+  if (!select) return;
+  
+  var activeColabs = STATE.colaboradores.filter(function(c) { return c.activo !== false; });
+  
+  var optionsHtml = '<option value="">-- Selecciona tu nombre --</option>' + 
+    activeColabs.map(function(c) {
+      return '<option value="' + c.cc + '">' + escapeHtml(c.nombre) + ' (' + escapeHtml(c.cargo) + ')</option>';
+    }).join('');
+  
+  select.innerHTML = optionsHtml;
+
+  if (assignSelect) {
+    assignSelect.innerHTML = '<option value="">-- Selecciona el compañero --</option>' +
+      activeColabs.map(function(c) {
+        return '<option value="' + c.cc + '">' + escapeHtml(c.nombre) + ' (' + escapeHtml(c.cargo) + ')</option>';
+      }).join('');
+  }
+}
+
+function renderDashboard() {
+  var searchInput = document.getElementById("globalSearchInput");
+  var q = (searchInput ? searchInput.value : "").trim().toLowerCase();
+  var date = STATE.currentDate;
+  
+  var dateBadge = document.getElementById("currentDateBadge");
+  if (dateBadge) dateBadge.textContent = "Fecha: " + date;
+
+  var totalColabs = 0, activosCount = 0, novedadesCount = 0, sinRegistroCount = 0;
+  var totalActividadesHoy = 0, sumAvance = 0, countAvance = 0;
+
+  var container = document.getElementById("collaboratorsContainer");
+  if (!container) return;
+  container.innerHTML = "";
+
+  var activeColabs = STATE.colaboradores.filter(function(c) { return c.activo !== false; });
+  totalColabs = activeColabs.length;
+
+  activeColabs.forEach(function(colab) {
+    var ast = STATE.asistencias.find(function(a) { return a.cc === colab.cc && a.fecha === date; });
+    var asistStatus = ast ? ast.estado : "SIN REGISTRO";
+    var novedadDetalle = ast ? ast.detalle_novedad : "";
+
+    var actsHoy = STATE.actividades.filter(function(a) { return a.cc === colab.cc && a.fecha === date; });
+    totalActividadesHoy += actsHoy.length;
+
+    if (actsHoy.length > 0 && asistStatus !== "NOVEDAD") {
+      asistStatus = "ACTIVO";
+    }
+
+    if (asistStatus === "ACTIVO") activosCount++;
+    else if (asistStatus === "NOVEDAD") novedadesCount++;
+    else sinRegistroCount++;
+
+    if (STATE.selectedAttendanceFilter && asistStatus !== STATE.selectedAttendanceFilter) {
+      return;
+    }
+
+    var actsText = actsHoy.map(function(a) { return a.detalle + " " + a.estado; }).join(" ");
+    var searchTarget = (colab.nombre + " " + colab.cargo + " " + actsText + " " + asistStatus).toLowerCase();
+    if (q && !searchTarget.includes(q)) {
+      return;
+    }
+
+    var colabAvance = 0;
+    if (actsHoy.length > 0) {
+      actsHoy.forEach(function(a) {
+        if (a.estado === "Finalizado") colabAvance += 100;
+        else if (a.estado === "Progreso") colabAvance += 50;
+      });
+      colabAvance = Math.round(colabAvance / actsHoy.length);
+      sumAvance += colabAvance;
+      countAvance++;
+    }
+
+    var tableRows = "";
+    if (actsHoy.length > 0) {
+      actsHoy.sort(function(a,b) { return a.horario.localeCompare(b.horario) || a.id - b.id; });
+      tableRows = actsHoy.map(function(a) {
+        return '<tr>' +
+          '<td style="font-weight:700; color:var(--accent-2); width:180px;">' + escapeHtml(a.horario) + '</td>' +
+          '<td>' + escapeHtml(a.detalle) + '</td>' +
+          '<td style="width:130px;"><span class="badge-estado ' + getEstadoClass(a.estado) + '">' + escapeHtml(a.estado) + '</span></td>' +
+        '</tr>';
+      }).join('');
+    } else {
+      tableRows = '<tr><td colspan="3" style="text-align:center; color:var(--muted); padding:16px;">' +
+        (asistStatus === 'NOVEDAD' ? '🏖️ Novedad reportada: ' + escapeHtml(novedadDetalle || 'Sin detalles') : 'Sin actividades registradas para este día.') +
+        '</td></tr>';
+    }
+
+    var badgeClass = "sinregistro", badgeLabel = "Sin Registro";
+    if (asistStatus === "ACTIVO") { badgeClass = "activo"; badgeLabel = "Activo"; }
+    else if (asistStatus === "NOVEDAD") { badgeClass = "novedad"; badgeLabel = "Novedad" + (novedadDetalle ? ' (' + novedadDetalle + ')' : ''); }
+
+    var barWidth = actsHoy.length > 0 ? colabAvance : 0;
+    var barClass = colabAvance === 100 ? '#10b981' : (colabAvance >= 50 ? '#f59e0b' : '#ef4444');
+
+    var html = '<details class="person" data-colab="' + escapeHtml(colab.nombre) + '">' +
+      '<summary>' +
+        '<div class="person-left">' +
+          '<div class="avatar">' + escapeHtml(colab.nombre.substring(0, 2).toUpperCase()) + '</div>' +
+          '<div class="person-title">' +
+            '<span class="person-name">' + escapeHtml(colab.nombre) + '</span>' +
+            '<span class="person-sub">' + escapeHtml(colab.cargo) + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="person-right">' +
+          '<span class="badge-asist ${badgeClass}"><span class="dot"></span>' + escapeHtml(badgeLabel) + '</span>' +
+          '<div style="min-width:140px; display:flex; flex-direction:column; gap:3px;">' +
+            '<div style="display:flex; justify-content:space-between; font-size:11px; font-weight:800; color:var(--muted);">' +
+              '<span>Avance:</span>' +
+              '<span style="color:var(--accent-2);">' + (actsHoy.length > 0 ? colabAvance + '%' : '—') + '</span>' +
+            '</div>' +
+            '<div class="progress-bar-bg" style="height:6px; margin:0;">' +
+              '<div class="progress-bar-fill" style="width:' + barWidth + '%; background:' + barClass + ';"></div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</summary>' +
+      '<div class="person-body">' +
+        '<table><thead><tr><th>Horario</th><th>Detalle de Actividad</th><th>Estado</th></tr></thead><tbody>' +
+        tableRows +
+        '</tbody></table>' +
+      '</div>' +
+    '</details>';
+
+    container.insertAdjacentHTML("beforeend", html);
+  });
+
+  document.getElementById("countTotal").textContent = totalColabs;
+  document.getElementById("countActivos").textContent = activosCount;
+  document.getElementById("countNovedades").textContent = novedadesCount;
+  document.getElementById("countSinRegistro").textContent = sinRegistroCount;
+
+  document.getElementById("kpiColabsCount").textContent = totalColabs;
+  document.getElementById("kpiColabsSub").textContent = activosCount + " activos · " + novedadesCount + " novedades";
+  
+  var pctAsist = totalColabs > 0 ? Math.round((activosCount / totalColabs) * 100) : 0;
+  document.getElementById("kpiAsistenciaPct").textContent = pctAsist + "%";
+  document.getElementById("kpiAsistenciaSub").textContent = activosCount + " de " + totalColabs + " publicaron";
+
+  document.getElementById("kpiActividadesCount").textContent = totalActividadesHoy;
+
+  var teamScore = countAvance > 0 ? Math.round(sumAvance / countAvance) : 0;
+  document.getElementById("kpiAvancePct").textContent = teamScore + "%";
+  document.getElementById("kpiAvanceBar").style.width = teamScore + "%";
+  document.getElementById("kpiAvanceSub").textContent = "Medición basada en actividades de la fecha";
+
+  updateCarlosExecutiveAlert();
+}
+
+function getEstadoClass(estado) {
+  if (estado === "Finalizado") return "estado-finalizado";
+  if (estado === "Progreso") return "estado-progreso";
+  if (estado === "Pendiente") return "estado-pendiente";
+  return "estado-sin";
+}
+
+function filterByAttendance(status) {
+  STATE.selectedAttendanceFilter = status;
+  ["btnFilterAll", "btnFilterActivos", "btnFilterNovedades", "btnFilterPendientes"].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.remove("active-filter");
+  });
+  if (status === "" && document.getElementById("btnFilterAll")) document.getElementById("btnFilterAll").classList.add("active-filter");
+  if (status === "ACTIVO" && document.getElementById("btnFilterActivos")) document.getElementById("btnFilterActivos").classList.add("active-filter");
+  if (status === "NOVEDAD" && document.getElementById("btnFilterNovedades")) document.getElementById("btnFilterNovedades").classList.add("active-filter");
+  if (status === "SIN REGISTRO" && document.getElementById("btnFilterPendientes")) document.getElementById("btnFilterPendientes").classList.add("active-filter");
+  renderDashboard();
+}
+
+var sInput = document.getElementById("globalSearchInput");
+if (sInput) sInput.addEventListener("input", renderDashboard);
+
+function toggleAllAccordions(open) {
+  document.querySelectorAll("details.person").forEach(function(d) { d.open = open; });
+}
+
+// ========================================================
+// 4. LÓGICA DEL FORMULARIO Y CONTROL DE ACCESO
+// ========================================================
+function openAgendaModal() {
+  var modal = document.getElementById("agendaModal");
+  if (!modal) return;
+  modal.classList.add("open");
+  var dateInput = document.getElementById("modalDateInput");
+  if (dateInput) dateInput.value = STATE.currentDate;
+  resetModalForm();
+}
+
+function closeAgendaModal() {
+  var modal = document.getElementById("agendaModal");
+  if (modal) modal.classList.remove("open");
+}
+
+function resetModalForm() {
+  var actSec = document.getElementById("activitiesFormSection");
+  if (actSec) actSec.style.display = "none";
+  
+  var cBanner = document.getElementById("carlosBanner");
+  if (cBanner) cBanner.classList.remove("carlos");
+  
+  var yBanner = document.getElementById("yeisonBanner");
+  if (yBanner) yBanner.classList.remove("yeison");
+  
+  var vMsg = document.getElementById("ccValidationMsg");
+  if (vMsg) vMsg.textContent = "";
+  
+  var ccInput = document.getElementById("modalCCInput");
+  if (ccInput) ccInput.value = STATE.verifiedCC || "";
+  
+  if (STATE.verifiedCC) {
+    verifyIdentity();
+  }
+}
+
+function onColabSelected() {
+  var sel = document.getElementById("modalColabSelect");
+  if (!sel) return;
+  STATE.activeColabCC = sel.value;
+  if (STATE.verifiedCC) {
+    verifyIdentity();
+  }
+}
+
+function verifyIdentity() {
+  var ccEntered = (document.getElementById("modalCCInput").value || "").trim();
+  var selectedCC = document.getElementById("modalColabSelect").value;
+  var msgEl = document.getElementById("ccValidationMsg");
+
+  if (!ccEntered) {
+    msgEl.style.color = "var(--red)";
+    msgEl.textContent = "⚠️ Por favor ingresa tu número de cédula.";
+    return;
+  }
+
+  var adminWrap = document.getElementById("adminDirectAssignWrap");
+
+  // 1. CARLOS CUERVO (Coordinador)
+  if (ccEntered === CC_CARLOS_CUERVO) {
+    STATE.currentUserRole = "carlos";
+    STATE.verifiedCC = ccEntered;
+    msgEl.style.color = "#854d0e";
+    msgEl.textContent = "✅ Identidad confirmada: Carlos Cuervo (Coordinador EFI). Edición universal y gestión de equipo habilitadas.";
+    document.getElementById("carlosBanner").classList.add("carlos");
+    document.getElementById("yeisonBanner").classList.remove("yeison");
+    if (adminWrap) adminWrap.style.display = "block";
+    updateCarlosExecutiveAlert();
+    unlockActivitiesForm();
+    return;
+  }
+
+  // 2. YEISON OYOLA (Administrador)
+  if (ccEntered === CC_YEISON_OYOLA) {
+    STATE.currentUserRole = "yeison";
+    STATE.verifiedCC = ccEntered;
+    msgEl.style.color = "#1e40af";
+    msgEl.textContent = "✅ Identidad confirmada: Yeison Oyola (Administrador). Edición universal y gestión de equipo habilitadas.";
+    document.getElementById("yeisonBanner").classList.add("yeison");
+    document.getElementById("carlosBanner").classList.remove("carlos");
+    if (adminWrap) adminWrap.style.display = "block";
+    unlockActivitiesForm();
+    return;
+  }
+
+  if (adminWrap) adminWrap.style.display = "none";
+
+  // 3. Colaborador Regular
+  if (!selectedCC) {
+    msgEl.style.color = "var(--amber)";
+    msgEl.textContent = "Selecciona primero tu nombre en la lista.";
+    return;
+  }
+
+  if (ccEntered === selectedCC) {
+    STATE.currentUserRole = "colab";
+    STATE.verifiedCC = ccEntered;
+    msgEl.style.color = "var(--green)";
+    msgEl.textContent = "✅ Cédula verificada correctamente.";
+    document.getElementById("carlosBanner").classList.remove("carlos");
+    document.getElementById("yeisonBanner").classList.remove("yeison");
+    unlockActivitiesForm();
+  } else {
+    msgEl.style.color = "var(--red)";
+    msgEl.textContent = "❌ La cédula ingresada no coincide con el colaborador seleccionado.";
+    document.getElementById("activitiesFormSection").style.display = "none";
+  }
+}
+
+function unlockActivitiesForm() {
+  var actSec = document.getElementById("activitiesFormSection");
+  if (actSec) actSec.style.display = "flex";
+  var targetCC = document.getElementById("modalColabSelect").value || STATE.verifiedCC;
+  checkReceivedTasks(targetCC);
+  loadColabDayData();
+}
+
+// ========================================================
+// 5. BANDEJA DE TAREAS RECIBIDAS (ACEPTAR / RECHAZAR)
+// ========================================================
+function checkReceivedTasks(userCC) {
+  var inboxWrap = document.getElementById("inboxTasksSection");
+  var inboxContainer = document.getElementById("inboxTasksContainer");
+  if (!inboxWrap || !inboxContainer) return;
+
+  var pending = STATE.tareasAsignadas.filter(function(t) {
+    return t.para_cc === userCC && t.estado === "Pendiente";
+  });
+
+  if (pending.length === 0) {
+    inboxWrap.style.display = "none";
+    inboxContainer.innerHTML = "";
+    return;
+  }
+
+  inboxWrap.style.display = "flex";
+  inboxContainer.innerHTML = pending.map(function(t) {
+    var sender = STATE.colaboradores.find(function(c) { return c.cc === t.de_cc; });
+    var senderName = sender ? sender.nombre : "Compañero";
+    var adminBadge = t.es_admin ? '<span style="background:#fef3c7; color:#92400e; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:800;">Coordinación</span>' : '';
+
+    return '<div class="inbox-card">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:800;">' +
+        '<span>De: ' + escapeHtml(senderName) + ' ' + adminBadge + '</span>' +
+        '<span style="color:var(--muted); font-size:11px;">' + t.fecha + ' (' + t.horario + ')</span>' +
+      '</div>' +
+      '<div style="font-size:13px; font-weight:600; color:#1e293b; background:#fff; padding:8px 10px; border-radius:6px; border:1px solid #fed7aa;">' +
+        escapeHtml(t.detalle) +
+      '</div>' +
+      '<div class="inbox-actions">' +
+        '<button type="button" class="btn-accept" onclick="acceptAssignedTask(' + t.id + ')">✅ Aceptar e incluir en mi agenda</button>' +
+        '<button type="button" class="btn-reject" onclick="rejectAssignedTask(' + t.id + ')">❌ Rechazar tarea</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function acceptAssignedTask(taskId) {
+  var task = STATE.tareasAsignadas.find(function(t) { return t.id === taskId; });
+  if (!task) return;
+
+  try {
+    if (sbClient) {
+      // 1. Actualizar estado a Aceptada
+      await sbClient.from("tareas_asignadas").update({ estado: "Aceptada" }).eq("id", taskId);
+      
+      // 2. Insertar directamente en actividades
+      await sbClient.from("actividades").insert({
+        cc: task.para_cc,
+        fecha: task.fecha,
+        horario: task.horario,
+        detalle: task.detalle,
+        estado: "Progreso"
+      });
+
+      // 3. Asegurar estado Activo en asistencia
+      await sbClient.from("asistencia").upsert({
+        cc: task.para_cc,
+        fecha: task.fecha,
+        estado: "ACTIVO"
+      }, { onConflict: "cc, fecha" });
+
+      await loadAllDataFromSupabase();
+    } else {
+      task.estado = "Aceptada";
+      STATE.actividades.push({
+        id: Date.now(),
+        cc: task.para_cc,
+        fecha: task.fecha,
+        horario: task.horario,
+        detalle: task.detalle,
+        estado: "Progreso"
+      });
+      renderDashboard();
+    }
+
+    alert("✅ ¡Tarea aceptada e incorporada a tu agenda exitosamente!");
+    loadColabDayData();
+  } catch (err) {
+    alert("Error al aceptar tarea: " + err.message);
+  }
+}
+
+async function rejectAssignedTask(taskId) {
+  var reason = prompt("Indica el motivo del rechazo (opcional):", "No tengo disponibilidad para esta tarea");
+  if (reason === null) return;
+
+  try {
+    if (sbClient) {
+      await sbClient.from("tareas_asignadas").update({ estado: "Rechazada", motivo_rechazo: reason }).eq("id", taskId);
+      await loadAllDataFromSupabase();
+    } else {
+      var task = STATE.tareasAsignadas.find(function(t) { return t.id === taskId; });
+      if (task) { task.estado = "Rechazada"; task.motivo_rechazo = reason; }
+      renderDashboard();
+    }
+
+    alert("❌ Tarea rechazada.");
+    checkReceivedTasks(STATE.activeColabCC || STATE.verifiedCC);
+  } catch (err) {
+    alert("Error al rechazar tarea: " + err.message);
+  }
+}
+
+// Enviar / Asignar Tarea a un Compañero
+async function sendAssignedTask() {
+  var targetCC = document.getElementById("assignTargetColabSelect").value;
+  var schedule = document.getElementById("assignScheduleSelect").value;
+  var detail = (document.getElementById("assignTaskDetail").value || "").trim();
+  var date = document.getElementById("modalDateInput").value || STATE.currentDate;
+  var senderCC = STATE.verifiedCC;
+  var isDirect = document.getElementById("adminDirectAssignCheck") && document.getElementById("adminDirectAssignCheck").checked;
+
+  if (!targetCC) {
+    alert("Por favor selecciona el compañero destinatario.");
+    return;
+  }
+  if (!detail) {
+    alert("Escribe el detalle de la tarea a asignar.");
+    return;
+  }
+  if (targetCC === senderCC) {
+    alert("No puedes auto-enviarte una tarea a ti mismo. Agrégala directamente a tu agenda.");
+    return;
+  }
+
+  var isAdminSender = (senderCC === CC_CARLOS_CUERVO || senderCC === CC_YEISON_OYOLA);
+
+  try {
+    if (isDirect && isAdminSender) {
+      // Asignación directa inmediata sin requerir aprobación previa
+      if (sbClient) {
+        await sbClient.from("actividades").insert({
+          cc: targetCC,
+          fecha: date,
+          horario: schedule,
+          detalle: detail + " (Asignada por Coordinación)",
+          estado: "Progreso"
+        });
+        await sbClient.from("asistencia").upsert({
+          cc: targetCC,
+          fecha: date,
+          estado: "ACTIVO"
+        }, { onConflict: "cc, fecha" });
+        await sbClient.from("tareas_asignadas").insert({
+          de_cc: senderCC,
+          para_cc: targetCC,
+          fecha: date,
+          horario: schedule,
+          detalle: detail,
+          es_admin: true,
+          estado: "Aceptada"
+        });
+        await loadAllDataFromSupabase();
+      } else {
+        STATE.actividades.push({
+          id: Date.now(),
+          cc: targetCC,
+          fecha: date,
+          horario: schedule,
+          detalle: detail + " (Asignada por Coordinación)",
+          estado: "Progreso"
+        });
+        renderDashboard();
+      }
+      alert("⚡ ¡Tarea asignada directamente en la agenda del colaborador!");
+    } else {
+      // Envío colaborativo con solicitud de aceptación
+      if (sbClient) {
+        await sbClient.from("tareas_asignadas").insert({
+          de_cc: senderCC,
+          para_cc: targetCC,
+          fecha: date,
+          horario: schedule,
+          detalle: detail,
+          es_admin: isAdminSender,
+          estado: "Pendiente"
+        });
+        await loadAllDataFromSupabase();
+      } else {
+        STATE.tareasAsignadas.push({
+          id: Date.now(),
+          de_cc: senderCC,
+          para_cc: targetCC,
+          fecha: date,
+          horario: schedule,
+          detalle: detail,
+          es_admin: isAdminSender,
+          estado: "Pendiente"
+        });
+      }
+      alert("🚀 ¡Tarea enviada al colaborador exitosamente! Le aparecerá para aceptar o rechazar al abrir su agenda.");
+    }
+
+    document.getElementById("assignTaskDetail").value = "";
+  } catch (err) {
+    alert("Error al enviar tarea: " + err.message);
+  }
+}
+
+// ========================================================
+// 6. GESTIÓN DINÁMICA DE TAREAS (AM Y PM)
+// ========================================================
+function loadColabDayData() {
+  var targetCC = document.getElementById("modalColabSelect").value;
+  var targetDate = document.getElementById("modalDateInput").value || STATE.currentDate;
+  if (!targetCC) return;
+
+  var ast = STATE.asistencias.find(function(a) { return a.cc === targetCC && a.fecha === targetDate; });
+  var isNovedad = ast && ast.estado === "NOVEDAD";
+  
+  var novCheck = document.getElementById("modalNovedadCheck");
+  if (novCheck) novCheck.checked = isNovedad;
+  
+  var novText = document.getElementById("modalNovedadText");
+  if (novText) novText.value = ast ? (ast.detalle_novedad || "") : "";
+  toggleNovedadField();
+
+  var acts = STATE.actividades.filter(function(a) { return a.cc === targetCC && a.fecha === targetDate; });
+  var morningActs = acts.filter(function(a) { return a.horario.includes("08:00AM"); });
+  var afternoonActs = acts.filter(function(a) { return a.horario.includes("02:00PM"); });
+
+  STATE.dynamicTasks.morning = [];
+  STATE.dynamicTasks.afternoon = [];
+
+  if (morningActs.length > 0) {
+    morningActs.forEach(function(a) {
+      STATE.dynamicTasks.morning.push({ detalle: a.detalle, estado: a.estado });
+    });
+  } else {
+    STATE.dynamicTasks.morning.push({ detalle: "", estado: "Sin estado" });
+  }
+
+  if (afternoonActs.length > 0) {
+    afternoonActs.forEach(function(a) {
+      STATE.dynamicTasks.afternoon.push({ detalle: a.detalle, estado: a.estado });
+    });
+  } else {
+    STATE.dynamicTasks.afternoon.push({ detalle: "", estado: "Sin estado" });
+  }
+
+  renderDynamicTasks("morning");
+  renderDynamicTasks("afternoon");
+  updateDynamicProgress();
+}
+
+function toggleNovedadField() {
+  var novCheck = document.getElementById("modalNovedadCheck");
+  var wrap = document.getElementById("novedadDetailWrap");
+  if (novCheck && wrap) {
+    wrap.style.display = novCheck.checked ? "block" : "none";
+  }
+}
+
+function addMorningTask() {
+  STATE.dynamicTasks.morning.push({ detalle: "", estado: "Sin estado" });
+  renderDynamicTasks("morning");
+  updateDynamicProgress();
+}
+
+function addAfternoonTask() {
+  STATE.dynamicTasks.afternoon.push({ detalle: "", estado: "Sin estado" });
+  renderDynamicTasks("afternoon");
+  updateDynamicProgress();
+}
+
+function removeTask(shift, index) {
+  if (STATE.dynamicTasks[shift].length <= 1) {
+    STATE.dynamicTasks[shift][0] = { detalle: "", estado: "Sin estado" };
+  } else {
+    STATE.dynamicTasks[shift].splice(index, 1);
+  }
+  renderDynamicTasks(shift);
+  updateDynamicProgress();
+}
+
+function setTaskStatus(shift, index, status) {
+  if (STATE.dynamicTasks[shift] && STATE.dynamicTasks[shift][index]) {
+    STATE.dynamicTasks[shift][index].estado = status;
+    renderDynamicTasks(shift);
+    updateDynamicProgress();
+  }
+}
+
+function updateTaskText(shift, index, text) {
+  if (STATE.dynamicTasks[shift] && STATE.dynamicTasks[shift][index]) {
+    STATE.dynamicTasks[shift][index].detalle = text;
+  }
+}
+
+function renderDynamicTasks(shift) {
+  var containerId = shift === "morning" ? "morningTasksList" : "afternoonTasksList";
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = "";
+
+  var tasks = STATE.dynamicTasks[shift];
+  var shiftLabel = shift === "morning" ? "AM" : "PM";
+
+  tasks.forEach(function(t, idx) {
+    var cardClass = "";
+    if (t.estado === "Finalizado") cardClass = "completed";
+    else if (t.estado === "Progreso") cardClass = "in-progress";
+    else if (t.estado === "Pendiente") cardClass = "pending";
+
+    var isFin = t.estado === "Finalizado" ? "selected-fin" : "";
+    var isPro = t.estado === "Progreso" ? "selected-pro" : "";
+    var isPen = t.estado === "Pendiente" ? "selected-pen" : "";
+
+    var html = '<div class="dynamic-task-card ' + cardClass + '">' +
+      '<div class="task-card-top">' +
+        '<span class="task-card-label">📌 Tarea ' + shiftLabel + ' #' + (idx + 1) + '</span>' +
+        '<button type="button" class="btn-remove-task" onclick="removeTask(\'' + shift + '\', ' + idx + ')" title="Eliminar esta tarea">🗑️ Quitar</button>' +
+      '</div>' +
+      '<textarea class="form-control" rows="2" placeholder="Describe la tarea de la ' + (shift === 'morning' ? 'mañana' : 'tarde') + '..." ' +
+                'oninput="updateTaskText(\'' + shift + '\', ' + idx + ', this.value)">' + escapeHtml(t.detalle) + '</textarea>' +
+      '<div class="task-card-bottom">' +
+        '<span style="font-size:11.5px; font-weight:800; color:var(--muted);">¿Completaste esta tarea?</span>' +
+        '<div class="status-btn-group">' +
+          '<button type="button" class="status-btn ' + isFin + '" onclick="setTaskStatus(\'' + shift + '\', ' + idx + ', \'Finalizado\')">✅ Sí, completada</button>' +
+          '<button type="button" class="status-btn ' + isPro + '" onclick="setTaskStatus(\'' + shift + '\', ' + idx + ', \'Progreso\')">🔄 En progreso</button>' +
+          '<button type="button" class="status-btn ' + isPen + '" onclick="setTaskStatus(\'' + shift + '\', ' + idx + ', \'Pendiente\')">⏳ Pendiente</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+    container.insertAdjacentHTML("beforeend", html);
+  });
+}
+
+function updateDynamicProgress() {
+  var totalTasks = 0;
+  var sumScore = 0;
+
+  var allTasks = STATE.dynamicTasks.morning.concat(STATE.dynamicTasks.afternoon);
+  
+  allTasks.forEach(function(t) {
+    if (t.detalle.trim() !== "" || t.estado !== "Sin estado") {
+      totalTasks++;
+      if (t.estado === "Finalizado") sumScore += 100;
+      else if (t.estado === "Progreso") sumScore += 50;
+    }
+  });
+
+  var pct = totalTasks > 0 ? Math.round(sumScore / totalTasks) : 0;
+  
+  var barEl = document.getElementById("formProgressBar");
+  if (barEl) barEl.style.width = pct + "%";
+  
+  var pctEl = document.getElementById("formProgressPct");
+  if (pctEl) pctEl.textContent = pct + "%";
+
+  var msg = "Ingresa tus tareas del día";
+  if (pct === 100 && totalTasks > 0) {
+    msg = "🎉 ¡Excelente! Tienes el 100% de tus actividades completadas hoy (" + totalTasks + " tareas).";
+  } else if (pct >= 50) {
+    msg = "🔄 Vas a buen ritmo: Tienes tareas en progreso (" + totalTasks + " tareas registradas).";
+  } else if (totalTasks > 0) {
+    msg = "⏳ Tienes tareas pendientes por finalizar hoy (" + totalTasks + " tareas registradas).";
+  }
+
+  var msgEl = document.getElementById("formProgressMsg");
+  if (msgEl) msgEl.textContent = msg;
+  
+  var badgeEl = document.getElementById("colabAdvanceBadge");
+  if (badgeEl) {
+    badgeEl.textContent = "Avance: " + pct + "%";
+    badgeEl.className = "badge-estado " + (pct === 100 ? 'estado-finalizado' : (pct >= 50 ? 'estado-progreso' : 'estado-pendiente'));
+  }
+
+  var summaryEl = document.getElementById("colabTasksSummary");
+  if (summaryEl) {
+    summaryEl.textContent = "Total tareas en formulario: " + totalTasks;
+  }
+}
+
+function updateCarlosExecutiveAlert() {
+  var banner = document.getElementById("carlosExecutiveSummary");
+  if (!banner) return;
+  var date = STATE.currentDate;
+  
+  var pendingActs = STATE.actividades.filter(function(a) { return a.fecha === date && a.estado === "Pendiente"; });
+  var sinRegistroColabs = STATE.colaboradores.filter(function(c) {
+    if (c.activo === false) return false;
+    var ast = STATE.asistencias.find(function(a) { return a.cc === c.cc && a.fecha === date; });
+    var acts = STATE.actividades.filter(function(a) { return a.cc === c.cc && a.fecha === date; });
+    return acts.length === 0 && (!ast || ast.estado === "SIN REGISTRO");
+  });
+
+  banner.innerHTML = '🔔 <strong>Resumen para el ' + date + ':</strong><br/>' +
+    '• <strong>' + pendingActs.length + '</strong> tareas pendientes en el equipo.<br/>' +
+    '• <strong>' + sinRegistroColabs.length + '</strong> colaboradores sin publicar agenda: <em>' + 
+    (sinRegistroColabs.map(function(c) { return c.nombre.split(' ')[0]; }).join(', ') || 'Ninguno') + '</em>.';
+}
+
+// ========================================================
+// 7. GUARDAR EN SUPABASE
+// ========================================================
+async function saveAgenda() {
+  var targetCC = document.getElementById("modalColabSelect").value;
+  var targetDate = document.getElementById("modalDateInput").value;
+  var isNovedad = document.getElementById("modalNovedadCheck").checked;
+  var novedadText = (document.getElementById("modalNovedadText").value || "").trim();
+
+  if (!targetCC || !targetDate) {
+    alert("Selecciona el colaborador y la fecha.");
+    return;
+  }
+
+  var morningValid = STATE.dynamicTasks.morning.filter(function(t) { return t.detalle.trim() !== ""; });
+  var afternoonValid = STATE.dynamicTasks.afternoon.filter(function(t) { return t.detalle.trim() !== ""; });
+
+  var saveBtn = document.getElementById("saveAgendaBtn");
+  saveBtn.disabled = true;
+  saveBtn.textContent = "Guardando en Supabase...";
+
+  try {
+    var asistEstado = "SIN REGISTRO";
+    if (isNovedad) {
+      asistEstado = "NOVEDAD";
+    } else if (morningValid.length > 0 || afternoonValid.length > 0) {
+      asistEstado = "ACTIVO";
+    }
+
+    if (sbClient) {
+      var resA = await sbClient.from("asistencia").upsert({
+        cc: targetCC,
+        fecha: targetDate,
+        estado: asistEstado,
+        detalle_novedad: isNovedad ? novedadText : null
+      }, { onConflict: "cc, fecha" });
+      if (resA.error) throw resA.error;
+
+      await sbClient.from("actividades").delete().eq("cc", targetCC).eq("fecha", targetDate);
+
+      var inserts = [];
+      morningValid.forEach(function(t) {
+        inserts.push({
+          cc: targetCC,
+          fecha: targetDate,
+          horario: "08:00AM - 01:00PM",
+          detalle: t.detalle.trim(),
+          estado: t.estado !== "Sin estado" ? t.estado : "Progreso"
+        });
+      });
+
+      afternoonValid.forEach(function(t) {
+        inserts.push({
+          cc: targetCC,
+          fecha: targetDate,
+          horario: "02:00PM - 05:00PM",
+          detalle: t.detalle.trim(),
+          estado: t.estado !== "Sin estado" ? t.estado : "Progreso"
+        });
+      });
+
+      if (inserts.length > 0) {
+        var resIns = await sbClient.from("actividades").insert(inserts);
+        if (resIns.error) throw resIns.error;
+      }
+    } else {
+      var existingAst = STATE.asistencias.find(function(a) { return a.cc === targetCC && a.fecha === targetDate; });
+      if (existingAst) {
+        existingAst.estado = asistEstado;
+        existingAst.detalle_novedad = isNovedad ? novedadText : null;
+      } else {
+        STATE.asistencias.push({ cc: targetCC, fecha: targetDate, estado: asistEstado, detalle_novedad: isNovedad ? novedadText : null });
+      }
+
+      STATE.actividades = STATE.actividades.filter(function(a) { return !(a.cc === targetCC && a.fecha === targetDate); });
+
+      morningValid.forEach(function(t, i) {
+        STATE.actividades.push({ id: Date.now() + i, cc: targetCC, fecha: targetDate, horario: "08:00AM - 01:00PM", detalle: t.detalle.trim(), estado: t.estado });
+      });
+      afternoonValid.forEach(function(t, i) {
+        STATE.actividades.push({ id: Date.now() + 100 + i, cc: targetCC, fecha: targetDate, horario: "02:00PM - 05:00PM", detalle: t.detalle.trim(), estado: t.estado });
+      });
+    }
+
+    alert("✅ ¡Todas tus tareas fueron guardadas y publicadas en línea con éxito!");
+    closeAgendaModal();
+    if (sbClient) {
+      await loadAllDataFromSupabase();
+    } else {
+      renderDashboard();
+    }
+  } catch (err) {
+    console.error("Error guardando agenda:", err);
+    alert("Error al guardar en Supabase: " + (err.message || err));
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = "💾 Guardar y Publicar en Línea";
+  }
+}
+
+// ========================================================
+// 8. GESTIÓN DE EQUIPO (SOLO PARA YEISON Y CARLOS)
+// ========================================================
+function openTeamModal() {
+  var modal = document.getElementById("teamModal");
+  if (modal) modal.classList.add("open");
+  renderTeamManagementTable();
+}
+
+function closeTeamModal() {
+  var modal = document.getElementById("teamModal");
+  if (modal) modal.classList.remove("open");
+}
+
+function renderTeamManagementTable() {
+  var tbody = document.querySelector("#teamManagementTable tbody");
+  if (!tbody) return;
+  tbody.innerHTML = STATE.colaboradores.map(function(c) {
+    return '<tr>' +
+      '<td style="font-weight:700;">' + escapeHtml(c.nombre) + '</td>' +
+      '<td>' + escapeHtml(c.cargo) + '</td>' +
+      '<td>' + (c.activo !== false ? '<span style="color:#059669; font-weight:800;">Activo</span>' : '<span style="color:#dc2626; font-weight:800;">Inactivo</span>') + '</td>' +
+      '<td>' +
+        '<button type="button" class="btn" style="padding:4px 8px; font-size:11px; background:' + (c.activo !== false ? '#fee2e2; color:#991b1b;' : '#ecfdf5; color:#065f46;') + '" ' +
+                'onclick="toggleColabStatus(\'' + c.cc + '\', ' + (c.activo !== false ? 'false' : 'true') + ')">' +
+          (c.activo !== false ? 'Retirar' : 'Reactivar') +
+        '</button>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+async function addNewCollaborator() {
+  var name = (document.getElementById("newColabName").value || "").trim();
+  var cc = (document.getElementById("newColabCC").value || "").trim();
+  var cargo = (document.getElementById("newColabCargo").value || "").trim().toUpperCase();
+  var phone = (document.getElementById("newColabPhone").value || "").trim();
+
+  if (!name || !cc || !cargo) {
+    alert("Por favor diligencia Nombre, Cédula y Cargo.");
+    return;
+  }
+
+  try {
+    if (sbClient) {
+      var res = await sbClient.from("colaboradores").insert({
+        nombre: name,
+        cc: cc,
+        cargo: cargo,
+        telefono: phone,
+        activo: true
+      });
+      if (res.error) throw res.error;
+    } else {
+      STATE.colaboradores.push({ nombre: name, cc: cc, cargo: cargo, telefono: phone, activo: true });
+    }
+
+    alert("✅ Colaborador agregado con éxito!");
+    document.getElementById("newColabName").value = "";
+    document.getElementById("newColabCC").value = "";
+    document.getElementById("newColabCargo").value = "";
+    document.getElementById("newColabPhone").value = "";
+    if (sbClient) await loadAllDataFromSupabase();
+    else { populateColabSelector(); renderDashboard(); renderTeamManagementTable(); }
+  } catch (err) {
+    alert("Error al agregar colaborador: " + err.message);
+  }
+}
+
+async function toggleColabStatus(cc, newStatus) {
+  try {
+    if (sbClient) {
+      var res = await sbClient.from("colaboradores").update({ activo: newStatus }).eq("cc", cc);
+      if (res.error) throw res.error;
+      await loadAllDataFromSupabase();
+    } else {
+      var c = STATE.colaboradores.find(function(x) { return x.cc === cc; });
+      if (c) c.activo = newStatus;
+      populateColabSelector();
+      renderDashboard();
+    }
+    renderTeamManagementTable();
+  } catch (err) {
+    alert("Error al cambiar estado: " + err.message);
+  }
+}
+
+// Función para limpiar emojis y caracteres especiales incompatibles con la fuente PDF
+function cleanForPdf(text) {
+  if (!text) return "";
+  return String(text)
+    .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F1E6}-\u{1F1FF}]/gu, '')
+    .trim();
+}
+
+// ========================================================
+// 9. GENERACIÓN Y DESCARGA DE INFORME EN PDF (SIN CARACTERES EXTRAÑOS)
+// ========================================================
+function generatePdfReport() {
+  var date = STATE.currentDate;
+  var activeColabs = STATE.colaboradores.filter(function(c) { return c.activo !== false; });
+  
+  if (typeof window.jspdf === 'undefined' || !window.jspdf.jsPDF) {
+    window.print();
+    return;
+  }
+
+  var jsPDF = window.jspdf.jsPDF;
+  var doc = new jsPDF('landscape');
+
+  // Encabezado Corporativo CUN
+  doc.setFillColor(72, 29, 128); // Morado institucional #481d80
+  doc.rect(0, 0, 297, 24, 'F');
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(15);
+  doc.setFont('helvetica', 'bold');
+  doc.text("GESTION EFI - INFORME DE ACTIVIDADES DIARIAS", 14, 15);
+
+  doc.setFontSize(9.5);
+  doc.setFont('helvetica', 'normal');
+  doc.text("Corporacion Unificada Nacional de Educacion Superior (CUN) | Fecha: " + date, 175, 15);
+
+  // Resumen Ejecutivo de Métricas
+  var totalActivos = document.getElementById("countActivos").textContent;
+  var totalNovedades = document.getElementById("countNovedades").textContent;
+  var totalSinRegistro = document.getElementById("countSinRegistro").textContent;
+  var avanceEquipo = document.getElementById("kpiAvancePct").textContent;
+
+  doc.setTextColor(30, 41, 59);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text("Resumen Ejecutivo:", 14, 32);
+
+  doc.setFontSize(9.5);
+  doc.setFont('helvetica', 'normal');
+  doc.text("Colaboradores Activos: " + totalActivos + "    |    Novedades: " + totalNovedades + 
+           "    |    Sin Registro: " + totalSinRegistro + "    |    Avance Promedio del Equipo: " + avanceEquipo, 14, 38);
+
+  // Armar filas limpias sin emojis para evitar símbolos corruptos
+  var rows = [];
+  activeColabs.forEach(function(c) {
+    var ast = STATE.asistencias.find(function(a) { return a.cc === c.cc && a.fecha === date; });
+    var acts = STATE.actividades.filter(function(a) { return a.cc === c.cc && a.fecha === date; });
+    var novedadDetalle = (ast && ast.estado === "NOVEDAD") ? (ast.detalle_novedad || 'Vacaciones') : '';
+
+    if (acts.length > 0) {
+      acts.sort(function(a,b) { return a.horario.localeCompare(b.horario); });
+      acts.forEach(function(a, idx) {
+        rows.push([
+          idx === 0 ? cleanForPdf(c.nombre) : '',
+          idx === 0 ? cleanForPdf(c.cargo) : '',
+          cleanForPdf(a.horario),
+          cleanForPdf(a.detalle),
+          cleanForPdf(a.estado)
+        ]);
+      });
+    } else {
+      var detalleTexto = 'Sin actividades registradas';
+      if (ast && ast.estado === "NOVEDAD") {
+        detalleTexto = 'Novedad: ' + cleanForPdf(novedadDetalle);
+      }
+      rows.push([
+        cleanForPdf(c.nombre),
+        cleanForPdf(c.cargo),
+        '-',
+        detalleTexto,
+        ast ? ast.estado : 'SIN REGISTRO'
+      ]);
+    }
+  });
+
+  // Generar tabla PDF
+  doc.autoTable({
+    startY: 44,
+    head: [['Colaborador', 'Cargo', 'Horario', 'Detalle de Actividad', 'Estado']],
+    body: rows,
+    theme: 'grid',
+    headStyles: {
+      fillColor: [107, 47, 184],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      fontSize: 9
+    },
+    bodyStyles: {
+      fontSize: 8.5,
+      textColor: [30, 41, 59]
+    },
+    columnStyles: {
+      0: { cellWidth: 50, fontStyle: 'bold' },
+      1: { cellWidth: 38 },
+      2: { cellWidth: 38 },
+      3: { cellWidth: 110 },
+      4: { cellWidth: 33 }
+    },
+    didParseCell: function(data) {
+      if (data.column.index === 4) {
+        var val = String(data.cell.raw).toLowerCase();
+        if (val.indexOf('finalizado') !== -1 || val.indexOf('activo') !== -1) {
+          data.cell.styles.textColor = [16, 126, 52];
+          data.cell.styles.fontStyle = 'bold';
+        } else if (val.indexOf('progreso') !== -1) {
+          data.cell.styles.textColor = [197, 134, 14];
+        } else if (val.indexOf('novedad') !== -1) {
+          data.cell.styles.textColor = [139, 92, 246];
+        } else if (val.indexOf('pendiente') !== -1 || val.indexOf('sin') !== -1) {
+          data.cell.styles.textColor = [220, 38, 38];
+        }
+      }
+    }
+  });
+
+  var fileName = "Informe_Gestion_EFI_" + date.replace(/-/g, '_') + ".pdf";
+  doc.save(fileName);
+}
+
+// ========================================================
+// 10. TEMA NORMAL / HALLOWEEN
+// ========================================================
+function setupTheme() {
+  var btn = document.getElementById("themeToggleBtn");
+  var saved = localStorage.getItem("efi_theme");
+  if (saved === "halloween") {
+    document.body.classList.add("halloween-mode");
+    if (btn) btn.innerHTML = "👻 Normal";
+  }
+}
+
+function toggleTheme() {
+  var btn = document.getElementById("themeToggleBtn");
+  var isH = document.body.classList.toggle("halloween-mode");
+  if (btn) btn.innerHTML = isH ? "👻 Normal" : "🎃 Halloween";
+  localStorage.setItem("efi_theme", isH ? "halloween" : "normal");
+}
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+</script>
+</body>
+</html>
