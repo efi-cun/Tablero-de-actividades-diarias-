@@ -266,6 +266,8 @@ h1 {
 .semaforo-red .semaforo-title { color: #b91c1c; }
 .semaforo-blue { border-left: 6px solid var(--accent); }
 .semaforo-blue .semaforo-title { color: var(--accent); }
+.semaforo-orange { border-left: 6px solid #f59e0b; }
+.semaforo-orange .semaforo-title { color: #b45309; }
 
 /* Grid de KPIs */
 .kpi-grid {
@@ -430,6 +432,277 @@ h1 {
 .estado-progreso { background: #fefce8; color: #854d0e; border: 1px solid #fde047; }
 .estado-pendiente { background: #fff7ed; color: #9a3412; border: 1px solid #fdba74; }
 .estado-sin { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+/* Conmutador de Vistas (Lista vs Kanban / Camba) */
+.view-switch-box {
+  display: flex;
+  gap: 4px;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.btn-view {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-view:hover {
+  color: var(--accent);
+}
+.btn-view.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(107, 47, 184, 0.35);
+}
+
+/* Banner de Sistema de Alerta de Pendientes */
+.alert-pendientes-banner {
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1px solid #fde68a;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.alert-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.alert-bell-icon {
+  font-size: 26px;
+  animation: ringBell 2.5s infinite ease-in-out;
+}
+@keyframes ringBell {
+  0%, 100% { transform: rotate(0deg); }
+  10%, 30% { transform: rotate(14deg); }
+  20%, 40% { transform: rotate(-14deg); }
+  50% { transform: rotate(0deg); }
+}
+.alert-banner-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.btn-sm-alert {
+  padding: 6px 12px;
+  font-size: 11.5px;
+  font-weight: 800;
+  border-radius: 8px;
+  border: 1px solid #d97706;
+  background: #d97706;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-sm-alert:hover { background: #b45309; }
+.btn-sm-alert-sec {
+  padding: 6px 12px;
+  font-size: 11.5px;
+  font-weight: 800;
+  border-radius: 8px;
+  border: 1px solid #fed7aa;
+  background: #fff;
+  color: #92400e;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-sm-alert-sec:hover { background: #fef3c7; }
+
+/* Vista Kanban (Camba) */
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  align-items: flex-start;
+}
+@media (max-width: 992px) {
+  .kanban-board {
+    grid-template-columns: 1fr;
+  }
+}
+.kanban-col {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: 480px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  transition: background 0.2s, border-color 0.2s;
+}
+.kanban-col.drag-over {
+  background: #e2e8f0;
+  border: 2px dashed var(--accent);
+}
+.kanban-col-header {
+  padding: 12px 16px;
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 800;
+  font-size: 13.5px;
+  border-bottom: 3px solid;
+}
+.kanban-col.col-pendiente .kanban-col-header {
+  background: #fffbeb;
+  border-color: #f59e0b;
+  color: #b45309;
+}
+.kanban-col.col-progreso .kanban-col-header {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+}
+.kanban-col.col-finalizado .kanban-col-header {
+  background: #f0fdf4;
+  border-color: #10b981;
+  color: #047857;
+}
+.kanban-col-count {
+  background: rgba(0, 0, 0, 0.08);
+  padding: 3px 9px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 800;
+}
+.kanban-cards-list {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 250px;
+  overflow-y: auto;
+  max-height: 72vh;
+}
+.kanban-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: grab;
+  user-select: none;
+}
+.kanban-card:active {
+  cursor: grabbing;
+}
+.kanban-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+.kanban-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.kanban-card-colab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.kanban-card-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.kanban-card-name {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+}
+.kanban-card-cargo {
+  font-size: 11px;
+  color: var(--muted);
+}
+.kanban-card-date {
+  font-size: 11px;
+  font-weight: 700;
+  background: #f1f5f9;
+  padding: 2px 7px;
+  border-radius: 6px;
+  color: var(--text);
+  white-space: nowrap;
+}
+.kanban-card-schedule {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--accent-2);
+}
+.kanban-card-detail {
+  font-size: 13px;
+  color: #1e293b;
+  line-height: 1.4;
+  word-break: break-word;
+}
+.kanban-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 8px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.kanban-actions-group {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.kanban-action-btn {
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.kanban-action-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.kanban-empty-msg {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12.5px;
+  padding: 30px 10px;
+  font-style: italic;
+}
 
 /* Acordeón de Colaboradores */
 .person-list {
@@ -767,48 +1040,67 @@ tr:hover td { background: #fbfcfe; }
   border-color: #dc2626;
 }
 
-/* Tema Halloween */
-body.halloween-mode {
-  --bg: #09090b;
-  --panel: #141416;
-  --border: #ea580c;
-  --text: #f4f4f5;
-  --muted: #a1a1aa;
-  --accent: #ea580c;
-  --accent-2: #c2410c;
-  --accent-3: #f97316;
-  --shadow: rgba(0,0,0,0.4);
+/* Tema Navideño (Exclusivo Administrador Yeison) */
+body.navidad-mode {
+  --bg: #f8fafc;
+  --accent: #b91c1c;
+  --accent-2: #166534;
+  --accent-3: #dc2626;
+  background: linear-gradient(180deg, #f0fdf4 0%, #fef2f2 100%);
 }
-body.halloween-mode .card, 
-body.halloween-mode .kpi,
-body.halloween-mode details.person,
-body.halloween-mode .semaforo-card,
-body.halloween-mode .search-box, 
-body.halloween-mode .date-box,
-body.halloween-mode table,
-body.halloween-mode .modal-content,
-body.halloween-mode .dynamic-task-card,
-body.halloween-mode .inbox-card {
-  background: #141416;
-  color: #f4f4f5;
+body.navidad-mode header {
+  background: linear-gradient(90deg, #991b1b 0%, #15803d 50%, #991b1b 100%);
+  border-bottom: 2px solid #fbbf24;
+  box-shadow: 0 10px 25px rgba(185, 28, 28, 0.25);
 }
-body.halloween-mode details.person summary {
-  background: #18181b;
+body.navidad-mode .logo-mark {
+  background: #fef2f2;
+  color: #b91c1c;
+  box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.4);
 }
-body.halloween-mode details.person[open] summary {
-  background: linear-gradient(180deg, #3f1a04 0%, #2c1203 100%);
+body.navidad-mode .card-header {
+  background: linear-gradient(90deg, #166534, #b91c1c);
 }
-body.halloween-mode th {
-  background: #27160c;
-  color: #fdba74;
+body.navidad-mode .kpi {
+  border-top-color: #b91c1c;
 }
-body.halloween-mode td {
-  border-color: #27272a;
+body.navidad-mode details.person[open] summary {
+  background: #f0fdf4;
+  border-left: 4px solid #166534;
 }
-body.halloween-mode .form-control {
-  background: #1f1f23;
-  color: #f4f4f5;
-  border-color: #3f3f46;
+body.navidad-mode .avatar {
+  background: linear-gradient(135deg, #b91c1c, #166534);
+}
+body.navidad-mode #themeToggleBtn {
+  background: linear-gradient(135deg, #15803d, #b91c1c) !important;
+  color: #fff !important;
+  border: 1px solid #fde047 !important;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.5) !important;
+}
+
+/* Efecto de Nieve Navideña */
+.snow-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 99998;
+  overflow: hidden;
+}
+.snowflake {
+  position: absolute;
+  top: -20px;
+  color: #93c5fd;
+  opacity: 0.8;
+  font-size: 16px;
+  animation: fall linear infinite;
+  user-select: none;
+}
+@keyframes fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0.9; }
+  100% { transform: translateY(105vh) rotate(360deg); opacity: 0.2; }
 }
 
 /* Responsive */
@@ -824,6 +1116,7 @@ body.halloween-mode .form-control {
 </style>
 </head>
 <body>
+<div id="snowOverlay" class="snow-overlay" style="display:none;"></div>
 
 <div class="container">
   <!-- Encabezado Principal Genérico (Válido para cualquier mes) -->
@@ -842,6 +1135,11 @@ body.halloween-mode .form-control {
         <span id="realtimeText">En línea</span>
       </div>
 
+      <!-- BOTÓN SISTEMA DE ALERTA DE PENDIENTES -->
+      <button type="button" class="btn" id="openAlertsModalBtn" onclick="openAlertsModal()" title="Sistema de Alerta de Pendientes" style="background:#fffbeb; color:#92400e; border:1px solid #fde68a; font-weight:800;">
+        🔔 Alerta Pendientes <span id="headerPendingBadge" style="background:#dc2626; color:#fff; padding:2px 7px; border-radius:10px; font-size:11px; font-weight:800; margin-left:4px;">0</span>
+      </button>
+
       <!-- BOTÓN PRINCIPAL: ABRIR AGENDA CON CÉDULA -->
       <button type="button" class="btn btn-primary" id="openAgendaModalBtn" onclick="openAgendaModal()">
         📝 Publicar / Editar Mi Agenda
@@ -852,8 +1150,9 @@ body.halloween-mode .form-control {
         📄 Descargar Informe PDF
       </button>
 
-      <button type="button" class="btn" id="themeToggleBtn" onclick="toggleTheme()">
-        🎃 Halloween
+      <!-- BOTÓN MODO NAVIDEÑO (ACTIVACIÓN ADMIN YEISON - OCULTO CUANDO ESTÁ DESACTIVADO) -->
+      <button type="button" class="btn" id="themeToggleBtn" onclick="promptAdminNavidadToggle()" title="Control de Tema Navideño (Exclusivo Administrador Yeison)" style="display:none;">
+        🎄 Modo Navidad
       </button>
     </div>
   </header>
@@ -894,6 +1193,15 @@ body.halloween-mode .form-control {
         <span class="semaforo-hint">Pendientes por publicar</span>
       </div>
       <span style="font-size:28px;">⏳</span>
+    </div>
+
+    <div class="semaforo-card semaforo-orange" id="btnFilterPendientesTareas" onclick="filterByAttendance('TAREAS_PENDIENTES')" title="Ver colaboradores con actividades pendientes">
+      <div class="semaforo-info">
+        <span class="semaforo-title">⚠️ Tareas Pendientes</span>
+        <span class="semaforo-count" id="countTareasPendientes">0</span>
+        <span class="semaforo-hint">Actividades por finalizar</span>
+      </div>
+      <span style="font-size:28px;">🔔</span>
     </div>
   </div>
 
@@ -937,7 +1245,7 @@ body.halloween-mode .form-control {
     <div class="toolbar">
       <div class="search-box">
         <span>🔎</span>
-        <input type="text" id="globalSearchInput" placeholder="Buscar por colaborador, cargo o actividad..."/>
+        <input type="text" id="globalSearchInput" placeholder="Buscar por colaborador, cargo, fecha o actividad..."/>
       </div>
 
       <div class="date-box" title="Cambiar fecha a consultar">
@@ -945,16 +1253,75 @@ body.halloween-mode .form-control {
         <select id="dateSelect" aria-label="Fecha a consultar"></select>
       </div>
 
-      <div style="display:flex; gap:8px;">
+      <!-- Conmutador de Vistas: Lista vs Kanban (Camba) -->
+      <div class="view-switch-box">
+        <button type="button" class="btn-view active" id="btnViewList" onclick="setViewMode('list')">
+          📋 Lista
+        </button>
+        <button type="button" class="btn-view" id="btnViewKanban" onclick="setViewMode('kanban')">
+          📊 Vista Kanban (Camba)
+        </button>
+      </div>
+
+      <div style="display:flex; gap:8px;" id="listAccordionButtons">
         <button type="button" class="btn" style="background:#e2e8f0; color:#334155; border:none;" onclick="toggleAllAccordions(true)">Expandir todo</button>
         <button type="button" class="btn" style="background:#e2e8f0; color:#334155; border:none;" onclick="toggleAllAccordions(false)">Contraer todo</button>
       </div>
     </div>
 
-    <!-- Lista de Colaboradores (CCs OCULTAS) -->
+    <!-- BANNER DE ALERTA DE PENDIENTES DEL EQUIPO -->
+    <div class="alert-pendientes-banner" id="dashboardAlertBanner" style="display:none;">
+      <div class="alert-banner-left">
+        <span class="alert-bell-icon">🔔</span>
+        <div>
+          <strong id="alertBannerTitle" style="color:#92400e; font-size:13.5px;">Sistema de Alerta: 0 tareas pendientes</strong>
+          <div id="alertBannerSubtitle" style="font-size:12px; color:#78350f; margin-top:2px;">Monitoreo de compromisos y actividades del equipo EFI.</div>
+        </div>
+      </div>
+      <div class="alert-banner-actions">
+        <button type="button" class="btn-sm-alert" onclick="filterByAttendance('TAREAS_PENDIENTES')">
+          ⏳ Ver Pendientes
+        </button>
+        <button type="button" class="btn-sm-alert-sec" onclick="openAlertsModal()">
+          📋 Panel de Alertas
+        </button>
+      </div>
+    </div>
+
+    <!-- Lista de Colaboradores (Vista Lista / Acordeón) -->
     <div class="person-list" id="collaboratorsContainer">
       <div style="text-align:center; padding:40px; color:var(--muted);">
         Cargando colaboradores y actividades desde Supabase...
+      </div>
+    </div>
+
+    <!-- Tablero Kanban (Camba) -->
+    <div class="kanban-board" id="kanbanContainer" style="display:none;">
+      <!-- Columna 1: Pendientes -->
+      <div class="kanban-col col-pendiente" ondragover="onKanbanDragOver(event)" ondragleave="onKanbanDragLeave(event)" ondrop="onKanbanDrop(event, 'Pendiente')">
+        <div class="kanban-col-header">
+          <span>⏳ PENDIENTES / POR INICIAR</span>
+          <span class="kanban-col-count" id="kanbanCountPendiente">0</span>
+        </div>
+        <div class="kanban-cards-list" id="kanbanListPendiente"></div>
+      </div>
+
+      <!-- Columna 2: En Progreso -->
+      <div class="kanban-col col-progreso" ondragover="onKanbanDragOver(event)" ondragleave="onKanbanDragLeave(event)" ondrop="onKanbanDrop(event, 'Progreso')">
+        <div class="kanban-col-header">
+          <span>🔄 EN PROGRESO</span>
+          <span class="kanban-col-count" id="kanbanCountProgreso">0</span>
+        </div>
+        <div class="kanban-cards-list" id="kanbanListProgreso"></div>
+      </div>
+
+      <!-- Columna 3: Finalizadas -->
+      <div class="kanban-col col-finalizado" ondragover="onKanbanDragOver(event)" ondragleave="onKanbanDragLeave(event)" ondrop="onKanbanDrop(event, 'Finalizado')">
+        <div class="kanban-col-header">
+          <span>✅ FINALIZADAS</span>
+          <span class="kanban-col-count" id="kanbanCountFinalizado">0</span>
+        </div>
+        <div class="kanban-cards-list" id="kanbanListFinalizado"></div>
       </div>
     </div>
   </section>
@@ -994,13 +1361,18 @@ body.halloween-mode .form-control {
           <div>
             <strong>¡Bienvenido Yeison Oyola (Administrador del Sistema)!</strong>
             <div style="font-size:12px; font-weight:normal; margin-top:2px;">
-              Edición universal y gestión de colaboradores activadas.
+              Edición universal, gestión de colaboradores y ambiente festivo activadas.
             </div>
           </div>
         </div>
-        <button type="button" class="btn btn-purple" onclick="openTeamModal()">
-          ⚙️ Gestionar Equipo
-        </button>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <button type="button" class="btn" id="btnAdminNavidadToggle" onclick="toggleNavidadTheme()" style="background:linear-gradient(135deg, #15803d, #b91c1c); color:#fff; border:1px solid #fbbf24; font-weight:800; font-size:12px;" title="Activar o desactivar tema navideño para el tablero">
+            🎄 Modo Navideño: <span id="adminNavidadStateText">Desactivado ⚪</span>
+          </button>
+          <button type="button" class="btn btn-purple" onclick="openTeamModal()">
+            ⚙️ Gestionar Equipo
+          </button>
+        </div>
       </div>
 
       <!-- Paso 1: Selección y Validación de Identidad -->
@@ -1023,6 +1395,7 @@ body.halloween-mode .form-control {
         <div style="display:flex; gap:8px;">
           <input type="password" class="form-control" id="modalCCInput" placeholder="Digita tu número de cédula sin puntos" maxlength="15"/>
           <button type="button" class="btn btn-primary" onclick="verifyIdentity()">Confirmar Identidad</button>
+          <button type="button" class="btn" id="modalLogoutBtn" style="display:none; background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; font-size:12px; font-weight:700;" onclick="logoutUser()" title="Cerrar la sesión de usuario activa">🔒 Salir / Cambiar</button>
         </div>
         <span id="ccValidationMsg" style="font-size:12px; font-weight:700;"></span>
       </div>
@@ -1131,7 +1504,7 @@ body.halloween-mode .form-control {
 
         <!-- Botones de Acción -->
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:8px;">
-          <button type="button" class="btn" style="background:#cbd5e1; color:#334155; border:none;" onclick="closeAgendaModal()">Cancelar</button>
+          <button type="button" class="btn" style="background:#cbd5e1; color:#334155; border:none;" onclick="closeAgendaModal()">Cerrar ventana</button>
           <button type="button" class="btn btn-success" id="saveAgendaBtn" onclick="saveAgenda()">
             💾 Guardar y Publicar en Línea
           </button>
@@ -1153,6 +1526,20 @@ body.halloween-mode .form-control {
     </div>
 
     <div class="modal-body">
+      <!-- Control de Tema Navideño exclusivo Yeison Oyola -->
+      <div id="teamModalNavidadWrap" style="padding:10px 14px; border-radius:10px; background:#f0fdf4; border:1px solid #bbf7d0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:20px;">🎄</span>
+          <div>
+            <strong style="color:#166534; font-size:13px;">Ambiente Festivo Navideño</strong>
+            <div style="font-size:11px; color:#475569;">Control exclusivo para Administrador Yeison Oyola</div>
+          </div>
+        </div>
+        <button type="button" class="btn" id="teamModalNavidadBtn" onclick="toggleNavidadTheme()" style="background:#15803d; color:#fff; font-weight:800; font-size:12px;">
+          🎄 Activar Modo Navideño
+        </button>
+      </div>
+
       <div style="padding:14px; border-radius:12px; background:#f8fafc; border:1px solid var(--border); display:flex; flex-direction:column; gap:10px;">
         <span style="font-size:13px; font-weight:800; color:var(--accent-2);">➕ Agregar Nuevo Colaborador</span>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
@@ -1203,6 +1590,73 @@ body.halloween-mode .form-control {
   </div>
 </div>
 
+<!-- ======================================================== -->
+<!-- MODAL: SISTEMA DE ALERTA DE PENDIENTES Y GESTIÓN         -->
+<!-- ======================================================== -->
+<div class="modal-overlay" id="alertsModal">
+  <div class="modal-content" style="max-width:850px;">
+    <div class="modal-header" style="background: linear-gradient(135deg, #b45309, #d97706);">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:22px;">🔔</span>
+        <h3 style="margin:0; font-size:16px;">Sistema de Alerta de Gestión y Tareas Pendientes</h3>
+      </div>
+      <button type="button" class="modal-close" onclick="closeAlertsModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Resumen de Alerta -->
+      <div id="alertsModalSummary" style="padding:14px; border-radius:12px; background:#fffbeb; border:1px solid #fed7aa; display:flex; flex-direction:column; gap:6px;">
+        Cargando resumen de alertas...
+      </div>
+
+      <!-- Pestañas -->
+      <div style="display:flex; gap:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+        <button type="button" class="btn" id="tabAlertActsBtn" onclick="switchAlertTab('acts')" style="font-size:12px; background:var(--accent); color:#fff;">
+          📌 Actividades Pendientes (<span id="alertModalActsCount">0</span>)
+        </button>
+        <button type="button" class="btn" id="tabAlertColabsBtn" onclick="switchAlertTab('colabs')" style="font-size:12px; background:#e2e8f0; color:#334155; border:none;">
+          👥 Colaboradores Sin Registro (<span id="alertModalColabsCount">0</span>)
+        </button>
+      </div>
+
+      <!-- Contenedor: Actividades Pendientes -->
+      <div id="alertActsTabContent" style="max-height:50vh; overflow-y:auto; border-radius:8px; border:1px solid var(--border);">
+        <table id="alertPendingActsTable">
+          <thead>
+            <tr>
+              <th style="width:170px;">Colaborador</th>
+              <th style="width:110px;">Fecha</th>
+              <th style="width:150px;">Horario</th>
+              <th>Detalle de Actividad</th>
+              <th style="width:140px; text-align:center;">Acción Rápida</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- Contenedor: Colaboradores Sin Registro -->
+      <div id="alertColabsTabContent" style="display:none; max-height:50vh; overflow-y:auto; border-radius:8px; border:1px solid var(--border);">
+        <table id="alertPendingColabsTable">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Cargo</th>
+              <th>Teléfono</th>
+              <th>Estado Asistencia</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+        <span style="font-size:12px; color:var(--muted);">💡 Consejo: Puedes marcar tareas como finalizadas directamente desde aquí.</span>
+        <button type="button" class="btn" style="background:#cbd5e1; color:#334155; border:none;" onclick="closeAlertsModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // ========================================================
 // 1. CONFIGURACIÓN Y CLIENTE SUPABASE (CON ALIAS SEGURO)
@@ -1248,6 +1702,7 @@ var STATE = {
   fechas: [],
   currentDate: "",
   selectedAttendanceFilter: "",
+  viewMode: "list", // 'list' o 'kanban'
   currentUserRole: null, // 'carlos', 'yeison', 'colab'
   verifiedCC: null,
   activeColabCC: null,
@@ -1263,6 +1718,7 @@ var STATE = {
 document.addEventListener("DOMContentLoaded", function() {
   setupTheme();
   setupDateDetection();
+  initSavedSession();
   populateColabSelector();
   
   generateDynamicDates();
@@ -1276,6 +1732,22 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("realtimeText").textContent = "Modo local";
   }
 });
+
+function initSavedSession() {
+  var savedCC = localStorage.getItem("efi_verified_cc");
+  var savedColab = localStorage.getItem("efi_active_colab");
+  if (savedCC) {
+    STATE.verifiedCC = savedCC;
+    if (savedCC === CC_CARLOS_CUERVO) {
+      STATE.currentUserRole = "carlos";
+    } else if (savedCC === CC_YEISON_OYOLA) {
+      STATE.currentUserRole = "yeison";
+    } else {
+      STATE.currentUserRole = "colab";
+    }
+    STATE.activeColabCC = savedColab || savedCC;
+  }
+}
 
 function setupDateDetection() {
   var today = new Date();
@@ -1416,14 +1888,16 @@ function handleRealtimeUpdate(table, payload) {
 function populateDateSelector() {
   var select = document.getElementById("dateSelect");
   if (!select) return;
-  select.innerHTML = STATE.fechas.map(function(f) {
-    return '<option value="' + f + '" ' + (f === STATE.currentDate ? 'selected' : '') + '>' + f + '</option>';
-  }).join('');
+  var optionsHtml = '<option value="ALL"' + (STATE.currentDate === "ALL" ? ' selected' : '') + '>📅 Todas las fechas (Ver Todo)</option>' +
+    STATE.fechas.map(function(f) {
+      return '<option value="' + f + '" ' + (f === STATE.currentDate ? 'selected' : '') + '>' + f + '</option>';
+    }).join('');
+  select.innerHTML = optionsHtml;
 
   select.onchange = function(e) {
     STATE.currentDate = e.target.value;
     var mDate = document.getElementById("modalDateInput");
-    if (mDate) mDate.value = STATE.currentDate;
+    if (mDate && STATE.currentDate !== "ALL") mDate.value = STATE.currentDate;
     renderDashboard();
   };
 }
@@ -1454,12 +1928,14 @@ function renderDashboard() {
   var searchInput = document.getElementById("globalSearchInput");
   var q = (searchInput ? searchInput.value : "").trim().toLowerCase();
   var date = STATE.currentDate;
+  var isAllDates = (date === "ALL");
   
   var dateBadge = document.getElementById("currentDateBadge");
-  if (dateBadge) dateBadge.textContent = "Fecha: " + date;
+  if (dateBadge) dateBadge.textContent = "Fecha: " + (isAllDates ? "Todas las fechas" : date);
 
   var totalColabs = 0, activosCount = 0, novedadesCount = 0, sinRegistroCount = 0;
   var totalActividadesHoy = 0, sumAvance = 0, countAvance = 0;
+  var totalPendingActsHoy = 0;
 
   var container = document.getElementById("collaboratorsContainer");
   if (!container) return;
@@ -1469,14 +1945,19 @@ function renderDashboard() {
   totalColabs = activeColabs.length;
 
   activeColabs.forEach(function(colab) {
-    var ast = STATE.asistencias.find(function(a) { return a.cc === colab.cc && a.fecha === date; });
-    var asistStatus = ast ? ast.estado : "SIN REGISTRO";
+    var ast = isAllDates ? null : STATE.asistencias.find(function(a) { return a.cc === colab.cc && a.fecha === date; });
+    var asistStatus = isAllDates ? "ACTIVO" : (ast ? ast.estado : "SIN REGISTRO");
     var novedadDetalle = ast ? ast.detalle_novedad : "";
 
-    var actsHoy = STATE.actividades.filter(function(a) { return a.cc === colab.cc && a.fecha === date; });
+    var actsHoy = isAllDates
+      ? STATE.actividades.filter(function(a) { return a.cc === colab.cc; })
+      : STATE.actividades.filter(function(a) { return a.cc === colab.cc && a.fecha === date; });
+    
     totalActividadesHoy += actsHoy.length;
+    var colabPendingActs = actsHoy.filter(function(a) { return a.estado === "Pendiente" || a.estado === "Sin estado"; });
+    totalPendingActsHoy += colabPendingActs.length;
 
-    if (actsHoy.length > 0 && asistStatus !== "NOVEDAD") {
+    if (!isAllDates && actsHoy.length > 0 && asistStatus !== "NOVEDAD") {
       asistStatus = "ACTIVO";
     }
 
@@ -1484,12 +1965,17 @@ function renderDashboard() {
     else if (asistStatus === "NOVEDAD") novedadesCount++;
     else sinRegistroCount++;
 
-    if (STATE.selectedAttendanceFilter && asistStatus !== STATE.selectedAttendanceFilter) {
-      return;
+    // Filtros de semáforo
+    if (STATE.selectedAttendanceFilter) {
+      if (STATE.selectedAttendanceFilter === "TAREAS_PENDIENTES") {
+        if (colabPendingActs.length === 0) return;
+      } else if (asistStatus !== STATE.selectedAttendanceFilter) {
+        return;
+      }
     }
 
-    var actsText = actsHoy.map(function(a) { return a.detalle + " " + a.estado; }).join(" ");
-    var searchTarget = (colab.nombre + " " + colab.cargo + " " + actsText + " " + asistStatus).toLowerCase();
+    var actsText = actsHoy.map(function(a) { return (a.fecha || "") + " " + a.detalle + " " + a.estado; }).join(" ");
+    var searchTarget = (colab.nombre + " " + colab.cargo + " " + actsText + " " + asistStatus + (isAllDates ? "" : " " + date)).toLowerCase();
     if (q && !searchTarget.includes(q)) {
       return;
     }
@@ -1507,17 +1993,24 @@ function renderDashboard() {
 
     var tableRows = "";
     if (actsHoy.length > 0) {
-      actsHoy.sort(function(a,b) { return a.horario.localeCompare(b.horario) || a.id - b.id; });
+      actsHoy.sort(function(a,b) {
+        if (isAllDates) {
+          return (b.fecha || "").localeCompare(a.fecha || "") || a.horario.localeCompare(b.horario) || a.id - b.id;
+        }
+        return a.horario.localeCompare(b.horario) || a.id - b.id;
+      });
       tableRows = actsHoy.map(function(a) {
+        var actFecha = a.fecha || date;
         return '<tr>' +
-          '<td style="font-weight:700; color:var(--accent-2); width:180px;">' + escapeHtml(a.horario) + '</td>' +
+          '<td style="font-weight:700; color:var(--text); width:130px; white-space:nowrap;"><span style="color:var(--accent); margin-right:4px;">📅</span>' + escapeHtml(actFecha) + '</td>' +
+          '<td style="font-weight:700; color:var(--accent-2); width:170px;">' + escapeHtml(a.horario) + '</td>' +
           '<td>' + escapeHtml(a.detalle) + '</td>' +
           '<td style="width:130px;"><span class="badge-estado ' + getEstadoClass(a.estado) + '">' + escapeHtml(a.estado) + '</span></td>' +
         '</tr>';
       }).join('');
     } else {
-      tableRows = '<tr><td colspan="3" style="text-align:center; color:var(--muted); padding:16px;">' +
-        (asistStatus === 'NOVEDAD' ? '🏖️ Novedad reportada: ' + escapeHtml(novedadDetalle || 'Sin detalles') : 'Sin actividades registradas para este día.') +
+      tableRows = '<tr><td colspan="4" style="text-align:center; color:var(--muted); padding:16px;">' +
+        (asistStatus === 'NOVEDAD' ? '🏖️ Novedad reportada: ' + escapeHtml(novedadDetalle || 'Sin detalles') : 'Sin actividades registradas' + (isAllDates ? '.' : ' para la fecha ' + escapeHtml(date) + '.')) +
         '</td></tr>';
     }
 
@@ -1551,7 +2044,7 @@ function renderDashboard() {
         '</div>' +
       '</summary>' +
       '<div class="person-body">' +
-        '<table><thead><tr><th>Horario</th><th>Detalle de Actividad</th><th>Estado</th></tr></thead><tbody>' +
+        '<table><thead><tr><th style="width:130px;">Fecha</th><th style="width:170px;">Horario</th><th>Detalle de Actividad</th><th style="width:130px;">Estado</th></tr></thead><tbody>' +
         tableRows +
         '</tbody></table>' +
       '</div>' +
@@ -1564,6 +2057,12 @@ function renderDashboard() {
   document.getElementById("countActivos").textContent = activosCount;
   document.getElementById("countNovedades").textContent = novedadesCount;
   document.getElementById("countSinRegistro").textContent = sinRegistroCount;
+
+  var countPendientesEl = document.getElementById("countTareasPendientes");
+  if (countPendientesEl) countPendientesEl.textContent = totalPendingActsHoy;
+
+  var headerPendingBadge = document.getElementById("headerPendingBadge");
+  if (headerPendingBadge) headerPendingBadge.textContent = totalPendingActsHoy;
 
   document.getElementById("kpiColabsCount").textContent = totalColabs;
   document.getElementById("kpiColabsSub").textContent = activosCount + " activos · " + novedadesCount + " novedades";
@@ -1579,7 +2078,26 @@ function renderDashboard() {
   document.getElementById("kpiAvanceBar").style.width = teamScore + "%";
   document.getElementById("kpiAvanceSub").textContent = "Medición basada en actividades de la fecha";
 
+  // Actualizar banner de alerta en el tablero principal
+  var alertBanner = document.getElementById("dashboardAlertBanner");
+  var alertTitle = document.getElementById("alertBannerTitle");
+  var alertSub = document.getElementById("alertBannerSubtitle");
+  if (alertBanner && alertTitle && alertSub) {
+    if (totalPendingActsHoy > 0 || sinRegistroCount > 0) {
+      alertBanner.style.display = "flex";
+      alertTitle.textContent = "⚠️ Sistema de Alerta: " + totalPendingActsHoy + " tareas pendientes y " + sinRegistroCount + " colaboradores sin registrar";
+      alertSub.textContent = "Monitoreo activo para " + (isAllDates ? "todas las fechas" : "la fecha " + date) + ". Haz clic en Ver Pendientes para coordinar.";
+    } else {
+      alertBanner.style.display = "none";
+    }
+  }
+
   updateCarlosExecutiveAlert();
+
+  // Si está en vista Kanban (Camba), actualizar simultáneamente
+  if (STATE.viewMode === "kanban") {
+    renderKanban();
+  }
 }
 
 function getEstadoClass(estado) {
@@ -1591,7 +2109,7 @@ function getEstadoClass(estado) {
 
 function filterByAttendance(status) {
   STATE.selectedAttendanceFilter = status;
-  ["btnFilterAll", "btnFilterActivos", "btnFilterNovedades", "btnFilterPendientes"].forEach(function(id) {
+  ["btnFilterAll", "btnFilterActivos", "btnFilterNovedades", "btnFilterPendientes", "btnFilterPendientesTareas"].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.classList.remove("active-filter");
   });
@@ -1599,14 +2117,298 @@ function filterByAttendance(status) {
   if (status === "ACTIVO" && document.getElementById("btnFilterActivos")) document.getElementById("btnFilterActivos").classList.add("active-filter");
   if (status === "NOVEDAD" && document.getElementById("btnFilterNovedades")) document.getElementById("btnFilterNovedades").classList.add("active-filter");
   if (status === "SIN REGISTRO" && document.getElementById("btnFilterPendientes")) document.getElementById("btnFilterPendientes").classList.add("active-filter");
+  if (status === "TAREAS_PENDIENTES" && document.getElementById("btnFilterPendientesTareas")) document.getElementById("btnFilterPendientesTareas").classList.add("active-filter");
+  
   renderDashboard();
+  if (STATE.viewMode === "kanban") {
+    renderKanban();
+  }
 }
 
 var sInput = document.getElementById("globalSearchInput");
-if (sInput) sInput.addEventListener("input", renderDashboard);
+if (sInput) {
+  sInput.addEventListener("input", function() {
+    renderDashboard();
+    if (STATE.viewMode === "kanban") {
+      renderKanban();
+    }
+  });
+}
 
 function toggleAllAccordions(open) {
   document.querySelectorAll("details.person").forEach(function(d) { d.open = open; });
+}
+
+// ========================================================
+// 3.1. VISTA KANBAN (CAMBA) Y SISTEMA DE ALERTAS
+// ========================================================
+function setViewMode(mode) {
+  STATE.viewMode = mode;
+  var btnList = document.getElementById("btnViewList");
+  var btnKanban = document.getElementById("btnViewKanban");
+  var listCont = document.getElementById("collaboratorsContainer");
+  var kanbanCont = document.getElementById("kanbanContainer");
+  var accBtns = document.getElementById("listAccordionButtons");
+
+  if (mode === "kanban") {
+    if (btnList) btnList.classList.remove("active");
+    if (btnKanban) btnKanban.classList.add("active");
+    if (listCont) listCont.style.display = "none";
+    if (kanbanCont) kanbanCont.style.display = "grid";
+    if (accBtns) accBtns.style.display = "none";
+    renderKanban();
+  } else {
+    if (btnList) btnList.classList.add("active");
+    if (btnKanban) btnKanban.classList.remove("active");
+    if (listCont) listCont.style.display = "flex";
+    if (kanbanCont) kanbanCont.style.display = "none";
+    if (accBtns) accBtns.style.display = "flex";
+    renderDashboard();
+  }
+}
+
+function renderKanban() {
+  var kanbanCont = document.getElementById("kanbanContainer");
+  if (!kanbanCont) return;
+
+  var q = (document.getElementById("globalSearchInput") ? document.getElementById("globalSearchInput").value : "").trim().toLowerCase();
+  var date = STATE.currentDate;
+  var isAllDates = (date === "ALL");
+
+  var listPendiente = document.getElementById("kanbanListPendiente");
+  var listProgreso = document.getElementById("kanbanListProgreso");
+  var listFinalizado = document.getElementById("kanbanListFinalizado");
+
+  if (!listPendiente || !listProgreso || !listFinalizado) return;
+
+  var acts = STATE.actividades.filter(function(a) {
+    if (!isAllDates && a.fecha !== date) return false;
+
+    if (STATE.selectedAttendanceFilter === "TAREAS_PENDIENTES" && a.estado !== "Pendiente" && a.estado !== "Sin estado") {
+      return false;
+    }
+
+    if (q) {
+      var colab = STATE.colaboradores.find(function(c) { return c.cc === a.cc; });
+      var cName = colab ? colab.nombre : "";
+      var cCargo = colab ? colab.cargo : "";
+      var text = (cName + " " + cCargo + " " + (a.fecha || "") + " " + a.horario + " " + a.detalle + " " + a.estado).toLowerCase();
+      if (!text.includes(q)) return false;
+    }
+    return true;
+  });
+
+  var pendingActs = acts.filter(function(a) { return a.estado === "Pendiente" || a.estado === "Sin estado"; });
+  var progressActs = acts.filter(function(a) { return a.estado === "Progreso"; });
+  var finishedActs = acts.filter(function(a) { return a.estado === "Finalizado"; });
+
+  var countPenEl = document.getElementById("kanbanCountPendiente");
+  var countProEl = document.getElementById("kanbanCountProgreso");
+  var countFinEl = document.getElementById("kanbanCountFinalizado");
+  if (countPenEl) countPenEl.textContent = pendingActs.length;
+  if (countProEl) countProEl.textContent = progressActs.length;
+  if (countFinEl) countFinEl.textContent = finishedActs.length;
+
+  listPendiente.innerHTML = pendingActs.length ? pendingActs.map(createKanbanCardHtml).join("") : '<div class="kanban-empty-msg">No hay tareas pendientes</div>';
+  listProgreso.innerHTML = progressActs.length ? progressActs.map(createKanbanCardHtml).join("") : '<div class="kanban-empty-msg">No hay tareas en progreso</div>';
+  listFinalizado.innerHTML = finishedActs.length ? finishedActs.map(createKanbanCardHtml).join("") : '<div class="kanban-empty-msg">No hay tareas finalizadas</div>';
+}
+
+function createKanbanCardHtml(a) {
+  var colab = STATE.colaboradores.find(function(c) { return c.cc === a.cc; });
+  var name = colab ? colab.nombre : a.cc;
+  var cargo = colab ? colab.cargo : "Colaborador";
+  var initials = name.substring(0, 2).toUpperCase();
+
+  var actionButtons = "";
+  if (a.estado === "Pendiente" || a.estado === "Sin estado") {
+    actionButtons = '<button type="button" class="kanban-action-btn" onclick="moveTaskStatus(' + a.id + ', \'Progreso\')" title="Mover a Progreso">▶️ Progreso</button>' +
+      '<button type="button" class="kanban-action-btn" onclick="moveTaskStatus(' + a.id + ', \'Finalizado\')" title="Marcar como Finalizada">✅ Finalizar</button>';
+  } else if (a.estado === "Progreso") {
+    actionButtons = '<button type="button" class="kanban-action-btn" onclick="moveTaskStatus(' + a.id + ', \'Pendiente\')" title="Regresar a Pendiente">⏳ Pendiente</button>' +
+      '<button type="button" class="kanban-action-btn" onclick="moveTaskStatus(' + a.id + ', \'Finalizado\')" title="Marcar como Finalizada">✅ Finalizar</button>';
+  } else if (a.estado === "Finalizado") {
+    actionButtons = '<button type="button" class="kanban-action-btn" onclick="moveTaskStatus(' + a.id + ', \'Progreso\')" title="Reabrir tarea">↩️ Reabrir</button>';
+  }
+
+  var shiftBadge = a.horario.includes("08:00AM") ? '🌅 Mañana' : '🌇 Tarde';
+
+  return '<div class="kanban-card" draggable="true" ondragstart="onKanbanDragStart(event, ' + a.id + ')">' +
+    '<div class="kanban-card-top">' +
+      '<div class="kanban-card-colab">' +
+        '<div class="kanban-card-avatar">' + escapeHtml(initials) + '</div>' +
+        '<div>' +
+          '<div class="kanban-card-name">' + escapeHtml(name) + '</div>' +
+          '<div class="kanban-card-cargo">' + escapeHtml(cargo) + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<span class="kanban-card-date">📅 ' + escapeHtml(a.fecha) + '</span>' +
+    '</div>' +
+    '<div class="kanban-card-schedule">' + shiftBadge + ' (' + escapeHtml(a.horario) + ')</div>' +
+    '<div class="kanban-card-detail">' + escapeHtml(a.detalle) + '</div>' +
+    '<div class="kanban-card-footer">' +
+      '<span class="badge-estado ' + getEstadoClass(a.estado) + '">' + escapeHtml(a.estado) + '</span>' +
+      '<div class="kanban-actions-group">' + actionButtons + '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+var draggedTaskId = null;
+
+function onKanbanDragStart(event, taskId) {
+  draggedTaskId = taskId;
+  event.dataTransfer.setData("text/plain", String(taskId));
+  event.dataTransfer.effectAllowed = "move";
+}
+
+function onKanbanDragOver(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+  var col = event.currentTarget;
+  if (col) col.classList.add("drag-over");
+}
+
+function onKanbanDragLeave(event) {
+  var col = event.currentTarget;
+  if (col) col.classList.remove("drag-over");
+}
+
+async function onKanbanDrop(event, targetStatus) {
+  event.preventDefault();
+  var col = event.currentTarget;
+  if (col) col.classList.remove("drag-over");
+  
+  var taskId = draggedTaskId || parseInt(event.dataTransfer.getData("text/plain"), 10);
+  if (!taskId) return;
+  await moveTaskStatus(taskId, targetStatus);
+}
+
+async function moveTaskStatus(taskId, newStatus) {
+  var act = STATE.actividades.find(function(a) { return a.id === taskId; });
+  if (!act) return;
+  act.estado = newStatus;
+
+  if (sbClient) {
+    try {
+      await sbClient.from("actividades").update({ estado: newStatus }).eq("id", taskId);
+    } catch (e) {
+      console.warn("Error en Supabase al mover tarea:", e);
+    }
+  }
+
+  renderDashboard();
+  if (STATE.viewMode === "kanban") {
+    renderKanban();
+  }
+}
+
+// SISTEMA DE ALERTAS (MODAL Y GESTIÓN)
+function openAlertsModal() {
+  var modal = document.getElementById("alertsModal");
+  if (!modal) return;
+  modal.classList.add("open");
+  renderAlertsModalData();
+}
+
+function closeAlertsModal() {
+  var modal = document.getElementById("alertsModal");
+  if (modal) modal.classList.remove("open");
+}
+
+function switchAlertTab(tab) {
+  var btnActs = document.getElementById("tabAlertActsBtn");
+  var btnColabs = document.getElementById("tabAlertColabsBtn");
+  var contentActs = document.getElementById("alertActsTabContent");
+  var contentColabs = document.getElementById("alertColabsTabContent");
+
+  if (tab === "acts") {
+    if (btnActs) { btnActs.style.background = "var(--accent)"; btnActs.style.color = "#fff"; }
+    if (btnColabs) { btnColabs.style.background = "#e2e8f0"; btnColabs.style.color = "#334155"; }
+    if (contentActs) contentActs.style.display = "block";
+    if (contentColabs) contentColabs.style.display = "none";
+  } else {
+    if (btnColabs) { btnColabs.style.background = "var(--accent)"; btnColabs.style.color = "#fff"; }
+    if (btnActs) { btnActs.style.background = "#e2e8f0"; btnActs.style.color = "#334155"; }
+    if (contentActs) contentActs.style.display = "none";
+    if (contentColabs) contentColabs.style.display = "block";
+  }
+}
+
+function renderAlertsModalData() {
+  var date = STATE.currentDate;
+  var isAllDates = (date === "ALL");
+  
+  var pendingActs = STATE.actividades.filter(function(a) {
+    if (!isAllDates && a.fecha !== date) return false;
+    return a.estado === "Pendiente" || a.estado === "Sin estado";
+  });
+
+  var sinRegistroColabs = STATE.colaboradores.filter(function(c) {
+    if (c.activo === false) return false;
+    if (isAllDates) return false;
+    var ast = STATE.asistencias.find(function(a) { return a.cc === c.cc && a.fecha === date; });
+    var acts = STATE.actividades.filter(function(a) { return a.cc === c.cc && a.fecha === date; });
+    return acts.length === 0 && (!ast || ast.estado === "SIN REGISTRO");
+  });
+
+  var countActsEl = document.getElementById("alertModalActsCount");
+  var countColabsEl = document.getElementById("alertModalColabsCount");
+  if (countActsEl) countActsEl.textContent = pendingActs.length;
+  if (countColabsEl) countColabsEl.textContent = sinRegistroColabs.length;
+
+  var summaryEl = document.getElementById("alertsModalSummary");
+  if (summaryEl) {
+    summaryEl.innerHTML = '<div style="font-size:14px; font-weight:800; color:#92400e; display:flex; align-items:center; gap:8px;">' +
+      '<span>🔔 Reporte de Alertas (' + (isAllDates ? 'Historial General' : date) + ')</span>' +
+    '</div>' +
+    '<div style="font-size:12.5px; color:#78350f;">' +
+      '• <strong>' + pendingActs.length + ' tareas pendientes</strong> registradas en el equipo.<br/>' +
+      '• <strong>' + sinRegistroColabs.length + ' colaboradores</strong> sin registro de agenda para la fecha.' +
+    '</div>';
+  }
+
+  var tbodyActs = document.querySelector("#alertPendingActsTable tbody");
+  if (tbodyActs) {
+    if (pendingActs.length === 0) {
+      tbodyActs.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#059669; font-weight:700;">🎉 ¡Excelente! No hay actividades pendientes para la fecha seleccionada.</td></tr>';
+    } else {
+      tbodyActs.innerHTML = pendingActs.map(function(a) {
+        var colab = STATE.colaboradores.find(function(c) { return c.cc === a.cc; });
+        var name = colab ? colab.nombre : a.cc;
+        var cargo = colab ? colab.cargo : "";
+        return '<tr>' +
+          '<td style="font-weight:700;">' + escapeHtml(name) + '<br/><span style="font-size:11px; color:var(--muted); font-weight:normal;">' + escapeHtml(cargo) + '</span></td>' +
+          '<td style="white-space:nowrap; font-weight:700;">📅 ' + escapeHtml(a.fecha) + '</td>' +
+          '<td style="color:var(--accent-2); font-weight:700; font-size:11.5px;">' + escapeHtml(a.horario) + '</td>' +
+          '<td>' + escapeHtml(a.detalle) + '</td>' +
+          '<td style="text-align:center;">' +
+            '<button type="button" class="btn" style="padding:4px 8px; font-size:11px; background:#10b981; color:#fff; border:none;" onclick="quickResolveAlertTask(' + a.id + ')">✅ Finalizar</button>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+    }
+  }
+
+  var tbodyColabs = document.querySelector("#alertPendingColabsTable tbody");
+  if (tbodyColabs) {
+    if (sinRegistroColabs.length === 0) {
+      tbodyColabs.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#059669; font-weight:700;">🎉 Todos los colaboradores tienen agenda o novedad reportada.</td></tr>';
+    } else {
+      tbodyColabs.innerHTML = sinRegistroColabs.map(function(c) {
+        return '<tr>' +
+          '<td style="font-weight:700;">' + escapeHtml(c.nombre) + '</td>' +
+          '<td>' + escapeHtml(c.cargo) + '</td>' +
+          '<td>' + escapeHtml(c.telefono || "—") + '</td>' +
+          '<td><span class="badge-asist sinregistro"><span class="dot"></span>Sin Registro</span></td>' +
+        '</tr>';
+      }).join('');
+    }
+  }
+}
+
+async function quickResolveAlertTask(taskId) {
+  await moveTaskStatus(taskId, "Finalizado");
+  renderAlertsModalData();
 }
 
 // ========================================================
@@ -1616,14 +2418,54 @@ function openAgendaModal() {
   var modal = document.getElementById("agendaModal");
   if (!modal) return;
   modal.classList.add("open");
+  
   var dateInput = document.getElementById("modalDateInput");
-  if (dateInput) dateInput.value = STATE.currentDate;
-  resetModalForm();
+  if (dateInput) {
+    if (!dateInput.value || dateInput.value === "" || STATE.currentDate !== "ALL") {
+      dateInput.value = (STATE.currentDate && STATE.currentDate !== "ALL") ? STATE.currentDate : getTodayDateString();
+    }
+  }
+
+  // Si ya tenemos sesión verificada (por ejemplo Carlos o Yeison), restaurar y mantener el nombre
+  if (STATE.verifiedCC) {
+    var ccInput = document.getElementById("modalCCInput");
+    if (ccInput) ccInput.value = STATE.verifiedCC;
+    verifyIdentity(true);
+  } else {
+    resetModalForm();
+  }
+}
+
+function getTodayDateString() {
+  var today = new Date();
+  var yyyy = today.getFullYear();
+  var mm = String(today.getMonth() + 1).padStart(2, '0');
+  var dd = String(today.getDate()).padStart(2, '0');
+  return yyyy + "-" + mm + "-" + dd;
 }
 
 function closeAgendaModal() {
   var modal = document.getElementById("agendaModal");
   if (modal) modal.classList.remove("open");
+}
+
+function logoutUser() {
+  if (!confirm("¿Deseas cerrar tu sesión actual en este equipo?")) return;
+  localStorage.removeItem("efi_verified_cc");
+  localStorage.removeItem("efi_active_colab");
+  STATE.verifiedCC = null;
+  STATE.activeColabCC = null;
+  STATE.currentUserRole = null;
+
+  var ccInput = document.getElementById("modalCCInput");
+  if (ccInput) ccInput.value = "";
+  var colabSel = document.getElementById("modalColabSelect");
+  if (colabSel) colabSel.value = "";
+  var logoutBtn = document.getElementById("modalLogoutBtn");
+  if (logoutBtn) logoutBtn.style.display = "none";
+  
+  resetModalForm();
+  alert("Sesión cerrada. Ahora puedes ingresar con otra cédula.");
 }
 
 function resetModalForm() {
@@ -1639,11 +2481,15 @@ function resetModalForm() {
   var vMsg = document.getElementById("ccValidationMsg");
   if (vMsg) vMsg.textContent = "";
   
+  var logoutBtn = document.getElementById("modalLogoutBtn");
+  if (logoutBtn) logoutBtn.style.display = STATE.verifiedCC ? "inline-flex" : "none";
+
   var ccInput = document.getElementById("modalCCInput");
   if (ccInput) ccInput.value = STATE.verifiedCC || "";
-  
-  if (STATE.verifiedCC) {
-    verifyIdentity();
+
+  var colabSelect = document.getElementById("modalColabSelect");
+  if (colabSelect && STATE.activeColabCC) {
+    colabSelect.value = STATE.activeColabCC;
   }
 }
 
@@ -1651,30 +2497,61 @@ function onColabSelected() {
   var sel = document.getElementById("modalColabSelect");
   if (!sel) return;
   STATE.activeColabCC = sel.value;
+  localStorage.setItem("efi_active_colab", sel.value);
+
   if (STATE.verifiedCC) {
-    verifyIdentity();
+    var isAdmin = (
+      STATE.currentUserRole === "carlos" ||
+      STATE.currentUserRole === "yeison" ||
+      STATE.verifiedCC === CC_CARLOS_CUERVO ||
+      STATE.verifiedCC === CC_YEISON_OYOLA
+    );
+
+    if (isAdmin) {
+      checkReceivedTasks(sel.value || STATE.verifiedCC);
+      loadColabDayData();
+    } else {
+      verifyIdentity();
+    }
   }
 }
 
-function verifyIdentity() {
-  var ccEntered = (document.getElementById("modalCCInput").value || "").trim();
-  var selectedCC = document.getElementById("modalColabSelect").value;
+function verifyIdentity(isAuto) {
+  var ccInput = document.getElementById("modalCCInput");
+  var ccEntered = (ccInput ? ccInput.value : "").trim();
+  var colabSelect = document.getElementById("modalColabSelect");
+  var selectedCC = colabSelect ? colabSelect.value : "";
   var msgEl = document.getElementById("ccValidationMsg");
+  var adminWrap = document.getElementById("adminDirectAssignWrap");
+  var logoutBtn = document.getElementById("modalLogoutBtn");
 
   if (!ccEntered) {
-    msgEl.style.color = "var(--red)";
-    msgEl.textContent = "⚠️ Por favor ingresa tu número de cédula.";
+    if (msgEl) {
+      msgEl.style.color = "var(--red)";
+      msgEl.textContent = "⚠️ Por favor ingresa tu número de cédula.";
+    }
     return;
   }
-
-  var adminWrap = document.getElementById("adminDirectAssignWrap");
 
   // 1. CARLOS CUERVO (Coordinador)
   if (ccEntered === CC_CARLOS_CUERVO) {
     STATE.currentUserRole = "carlos";
     STATE.verifiedCC = ccEntered;
-    msgEl.style.color = "#854d0e";
-    msgEl.textContent = "✅ Identidad confirmada: Carlos Cuervo (Coordinador EFI). Edición universal y gestión de equipo habilitadas.";
+    localStorage.setItem("efi_verified_cc", ccEntered);
+
+    if (colabSelect) {
+      if (!colabSelect.value) {
+        colabSelect.value = STATE.activeColabCC || CC_CARLOS_CUERVO;
+      }
+      STATE.activeColabCC = colabSelect.value;
+      localStorage.setItem("efi_active_colab", STATE.activeColabCC);
+    }
+
+    if (msgEl) {
+      msgEl.style.color = "#854d0e";
+      msgEl.textContent = "✅ Identidad confirmada: Carlos Cuervo (Coordinador EFI). Edición universal y gestión de equipo habilitadas.";
+    }
+    if (logoutBtn) logoutBtn.style.display = "inline-flex";
     document.getElementById("carlosBanner").classList.add("carlos");
     document.getElementById("yeisonBanner").classList.remove("yeison");
     if (adminWrap) adminWrap.style.display = "block";
@@ -1687,12 +2564,28 @@ function verifyIdentity() {
   if (ccEntered === CC_YEISON_OYOLA) {
     STATE.currentUserRole = "yeison";
     STATE.verifiedCC = ccEntered;
-    msgEl.style.color = "#1e40af";
-    msgEl.textContent = "✅ Identidad confirmada: Yeison Oyola (Administrador). Edición universal y gestión de equipo habilitadas.";
+    localStorage.setItem("efi_verified_cc", ccEntered);
+
+    if (colabSelect) {
+      if (!colabSelect.value) {
+        colabSelect.value = STATE.activeColabCC || CC_YEISON_OYOLA;
+      }
+      STATE.activeColabCC = colabSelect.value;
+      localStorage.setItem("efi_active_colab", STATE.activeColabCC);
+    }
+
+    if (msgEl) {
+      msgEl.style.color = "#1e40af";
+      msgEl.textContent = "✅ Identidad confirmada: Yeison Oyola (Administrador). Edición universal y gestión de equipo habilitadas.";
+    }
+    if (logoutBtn) logoutBtn.style.display = "inline-flex";
     document.getElementById("yeisonBanner").classList.add("yeison");
     document.getElementById("carlosBanner").classList.remove("carlos");
     if (adminWrap) adminWrap.style.display = "block";
     unlockActivitiesForm();
+    if (typeof updateNavidadUI === "function") {
+      updateNavidadUI(document.body.classList.contains("navidad-mode"));
+    }
     return;
   }
 
@@ -1700,22 +2593,39 @@ function verifyIdentity() {
 
   // 3. Colaborador Regular
   if (!selectedCC) {
-    msgEl.style.color = "var(--amber)";
-    msgEl.textContent = "Selecciona primero tu nombre en la lista.";
-    return;
+    var matchedColab = STATE.colaboradores.find(function(c) { return c.cc === ccEntered; });
+    if (matchedColab && colabSelect) {
+      colabSelect.value = matchedColab.cc;
+      selectedCC = matchedColab.cc;
+    } else {
+      if (msgEl) {
+        msgEl.style.color = "var(--amber)";
+        msgEl.textContent = "Selecciona primero tu nombre en la lista o digita tu cédula registrada.";
+      }
+      return;
+    }
   }
 
   if (ccEntered === selectedCC) {
     STATE.currentUserRole = "colab";
     STATE.verifiedCC = ccEntered;
-    msgEl.style.color = "var(--green)";
-    msgEl.textContent = "✅ Cédula verificada correctamente.";
+    STATE.activeColabCC = selectedCC;
+    localStorage.setItem("efi_verified_cc", ccEntered);
+    localStorage.setItem("efi_active_colab", selectedCC);
+
+    if (msgEl) {
+      msgEl.style.color = "var(--green)";
+      msgEl.textContent = "✅ Cédula verificada correctamente.";
+    }
+    if (logoutBtn) logoutBtn.style.display = "inline-flex";
     document.getElementById("carlosBanner").classList.remove("carlos");
     document.getElementById("yeisonBanner").classList.remove("yeison");
     unlockActivitiesForm();
   } else {
-    msgEl.style.color = "var(--red)";
-    msgEl.textContent = "❌ La cédula ingresada no coincide con el colaborador seleccionado.";
+    if (msgEl) {
+      msgEl.style.color = "var(--red)";
+      msgEl.textContent = "❌ La cédula ingresada no coincide con el colaborador seleccionado.";
+    }
     document.getElementById("activitiesFormSection").style.display = "none";
   }
 }
@@ -1723,7 +2633,14 @@ function verifyIdentity() {
 function unlockActivitiesForm() {
   var actSec = document.getElementById("activitiesFormSection");
   if (actSec) actSec.style.display = "flex";
-  var targetCC = document.getElementById("modalColabSelect").value || STATE.verifiedCC;
+  
+  var sel = document.getElementById("modalColabSelect");
+  var targetCC = sel ? sel.value : "";
+  if (!targetCC) {
+    targetCC = STATE.activeColabCC || STATE.verifiedCC;
+    if (sel && targetCC) sel.value = targetCC;
+  }
+  
   checkReceivedTasks(targetCC);
   loadColabDayData();
 }
@@ -1935,8 +2852,23 @@ async function sendAssignedTask() {
 // 6. GESTIÓN DINÁMICA DE TAREAS (AM Y PM)
 // ========================================================
 function loadColabDayData() {
-  var targetCC = document.getElementById("modalColabSelect").value;
-  var targetDate = document.getElementById("modalDateInput").value || STATE.currentDate;
+  var colabSel = document.getElementById("modalColabSelect");
+  var targetCC = colabSel ? colabSel.value : "";
+  if (!targetCC && STATE.activeColabCC) {
+    targetCC = STATE.activeColabCC;
+    if (colabSel) colabSel.value = targetCC;
+  }
+  if (!targetCC && STATE.verifiedCC) {
+    targetCC = STATE.verifiedCC;
+    if (colabSel) colabSel.value = targetCC;
+  }
+
+  var dateInput = document.getElementById("modalDateInput");
+  var targetDate = (dateInput ? dateInput.value : "") || STATE.currentDate;
+  if (targetDate === "ALL" || !targetDate) {
+    targetDate = getTodayDateString();
+    if (dateInput) dateInput.value = targetDate;
+  }
   if (!targetCC) return;
 
   var ast = STATE.asistencias.find(function(a) { return a.cc === targetCC && a.fecha === targetDate; });
@@ -2029,6 +2961,8 @@ function renderDynamicTasks(shift) {
 
   var tasks = STATE.dynamicTasks[shift];
   var shiftLabel = shift === "morning" ? "AM" : "PM";
+  var targetDate = (document.getElementById("modalDateInput") ? document.getElementById("modalDateInput").value : "") || STATE.currentDate;
+  if (targetDate === "ALL" || !targetDate) targetDate = getTodayDateString();
 
   tasks.forEach(function(t, idx) {
     var cardClass = "";
@@ -2042,7 +2976,10 @@ function renderDynamicTasks(shift) {
 
     var html = '<div class="dynamic-task-card ' + cardClass + '">' +
       '<div class="task-card-top">' +
-        '<span class="task-card-label">📌 Tarea ' + shiftLabel + ' #' + (idx + 1) + '</span>' +
+        '<div style="display:flex; align-items:center; gap:8px;">' +
+          '<span class="task-card-label">📌 Tarea ' + shiftLabel + ' #' + (idx + 1) + '</span>' +
+          '<span style="background:#e0e7ff; color:#3730a3; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:800;">📅 ' + escapeHtml(targetDate) + '</span>' +
+        '</div>' +
         '<button type="button" class="btn-remove-task" onclick="removeTask(\'' + shift + '\', ' + idx + ')" title="Eliminar esta tarea">🗑️ Quitar</button>' +
       '</div>' +
       '<textarea class="form-control" rows="2" placeholder="Describe la tarea de la ' + (shift === 'morning' ? 'mañana' : 'tarde') + '..." ' +
@@ -2103,7 +3040,9 @@ function updateDynamicProgress() {
 
   var summaryEl = document.getElementById("colabTasksSummary");
   if (summaryEl) {
-    summaryEl.textContent = "Total tareas en formulario: " + totalTasks;
+    var targetDate = (document.getElementById("modalDateInput") ? document.getElementById("modalDateInput").value : "") || STATE.currentDate;
+    if (targetDate === "ALL" || !targetDate) targetDate = getTodayDateString();
+    summaryEl.textContent = "Total tareas registradas (" + targetDate + "): " + totalTasks;
   }
 }
 
@@ -2130,8 +3069,20 @@ function updateCarlosExecutiveAlert() {
 // 7. GUARDAR EN SUPABASE
 // ========================================================
 async function saveAgenda() {
-  var targetCC = document.getElementById("modalColabSelect").value;
-  var targetDate = document.getElementById("modalDateInput").value;
+  var colabSel = document.getElementById("modalColabSelect");
+  var targetCC = colabSel ? colabSel.value : "";
+  if (!targetCC && (STATE.activeColabCC || STATE.verifiedCC)) {
+    targetCC = STATE.activeColabCC || STATE.verifiedCC;
+    if (colabSel) colabSel.value = targetCC;
+  }
+
+  var dateInput = document.getElementById("modalDateInput");
+  var targetDate = dateInput ? dateInput.value : "";
+  if (targetDate === "ALL" || !targetDate) {
+    targetDate = getTodayDateString();
+    if (dateInput) dateInput.value = targetDate;
+  }
+
   var isNovedad = document.getElementById("modalNovedadCheck").checked;
   var novedadText = (document.getElementById("modalNovedadText").value || "").trim();
 
@@ -2210,12 +3161,37 @@ async function saveAgenda() {
       });
     }
 
-    alert("✅ ¡Todas tus tareas fueron guardadas y publicadas en línea con éxito!");
-    closeAgendaModal();
+    // Actualizar datos del tablero en segundo plano
     if (sbClient) {
       await loadAllDataFromSupabase();
     } else {
       renderDashboard();
+    }
+
+    var colabObj = STATE.colaboradores.find(function(c) { return c.cc === targetCC; });
+    var colabNombre = colabObj ? colabObj.nombre : "Colaborador";
+
+    var isCarlosOrYeison = (
+      STATE.verifiedCC === CC_CARLOS_CUERVO ||
+      STATE.verifiedCC === CC_YEISON_OYOLA ||
+      STATE.currentUserRole === "carlos" ||
+      STATE.currentUserRole === "yeison"
+    );
+
+    if (isCarlosOrYeison) {
+      // 1. MANTENER EL NOMBRE EN EL SELECTOR
+      if (colabSel) colabSel.value = targetCC;
+      STATE.activeColabCC = targetCC;
+      localStorage.setItem("efi_active_colab", targetCC);
+      
+      // 2. RECARGAR DATOS DEL DÍA SIN SALIRSE DEL MODAL
+      loadColabDayData();
+      
+      // 3. CONFIRMACIÓN: MANTIENE EL MODAL ABIERTO
+      alert("✅ ¡Actividades guardadas y sincronizadas con éxito!\n\nSe mantiene el colaborador (" + colabNombre + ") y la fecha (" + targetDate + ") para que puedas continuar registrando sin salirte del formulario.");
+    } else {
+      alert("✅ ¡Todas tus tareas fueron guardadas y publicadas en línea con éxito!");
+      closeAgendaModal();
     }
   } catch (err) {
     console.error("Error guardando agenda:", err);
@@ -2248,6 +3224,11 @@ function promptAdminTeamModal() {
 function openTeamModal() {
   var modal = document.getElementById("teamModal");
   if (modal) modal.classList.add("open");
+  var navWrap = document.getElementById("teamModalNavidadWrap");
+  if (navWrap) {
+    var isYeison = (STATE.verifiedCC === CC_YEISON_OYOLA || STATE.currentUserRole === "yeison");
+    navWrap.style.display = isYeison ? "flex" : "none";
+  }
   renderTeamManagementTable();
 }
 
@@ -2435,6 +3416,7 @@ function generatePdfReport() {
         rows.push([
           idx === 0 ? cleanForPdf(c.nombre) : '',
           idx === 0 ? cleanForPdf(c.cargo) : '',
+          cleanForPdf(a.fecha || date),
           cleanForPdf(a.horario),
           cleanForPdf(a.detalle),
           cleanForPdf(a.estado)
@@ -2448,6 +3430,7 @@ function generatePdfReport() {
       rows.push([
         cleanForPdf(c.nombre),
         cleanForPdf(c.cargo),
+        cleanForPdf(date === "ALL" ? "-" : date),
         '-',
         detalleTexto,
         ast ? ast.estado : 'SIN REGISTRO'
@@ -2458,7 +3441,7 @@ function generatePdfReport() {
   // Generar tabla PDF
   doc.autoTable({
     startY: 44,
-    head: [['Colaborador', 'Cargo', 'Horario', 'Detalle de Actividad', 'Estado']],
+    head: [['Colaborador', 'Cargo', 'Fecha', 'Horario', 'Detalle de Actividad', 'Estado']],
     body: rows,
     theme: 'grid',
     headStyles: {
@@ -2472,14 +3455,15 @@ function generatePdfReport() {
       textColor: [30, 41, 59]
     },
     columnStyles: {
-      0: { cellWidth: 50, fontStyle: 'bold' },
-      1: { cellWidth: 38 },
-      2: { cellWidth: 38 },
-      3: { cellWidth: 110 },
-      4: { cellWidth: 33 }
+      0: { cellWidth: 46, fontStyle: 'bold' },
+      1: { cellWidth: 34 },
+      2: { cellWidth: 26 },
+      3: { cellWidth: 34 },
+      4: { cellWidth: 100 },
+      5: { cellWidth: 30 }
     },
     didParseCell: function(data) {
-      if (data.column.index === 4) {
+      if (data.column.index === 5) {
         var val = String(data.cell.raw).toLowerCase();
         if (val.indexOf('finalizado') !== -1 || val.indexOf('activo') !== -1) {
           data.cell.styles.textColor = [16, 126, 52];
@@ -2500,22 +3484,154 @@ function generatePdfReport() {
 }
 
 // ========================================================
-// 10. TEMA NORMAL / HALLOWEEN
+// 10. TEMA NORMAL / NAVIDEÑO (EXCLUSIVO ADMIN YEISON OYOLA)
 // ========================================================
 function setupTheme() {
-  var btn = document.getElementById("themeToggleBtn");
   var saved = localStorage.getItem("efi_theme");
+  // Limpiar cualquier residuo de halloween
   if (saved === "halloween") {
-    document.body.classList.add("halloween-mode");
-    if (btn) btn.innerHTML = "👻 Normal";
+    localStorage.setItem("efi_theme", "normal");
+    saved = "normal";
+  }
+
+  var isNavidad = (saved === "navidad");
+  if (isNavidad) {
+    document.body.classList.add("navidad-mode");
+    createSnowflakes();
+  } else {
+    document.body.classList.remove("navidad-mode");
+    removeSnowflakes();
+  }
+  updateNavidadUI(isNavidad);
+}
+
+function updateNavidadUI(isNavidad) {
+  var headerBtn = document.getElementById("themeToggleBtn");
+  var adminBannerBtn = document.getElementById("btnAdminNavidadToggle");
+  var adminBannerText = document.getElementById("adminNavidadStateText");
+  var teamModalNavidadBtn = document.getElementById("teamModalNavidadBtn");
+
+  // El botón en el encabezado se muestra ÚNICAMENTE cuando el modo navideño está ACTIVO
+  // Al desactivarse, se oculta completamente para que no se vea
+  if (headerBtn) {
+    if (isNavidad) {
+      headerBtn.style.display = "inline-flex";
+      headerBtn.innerHTML = "🎅 Desactivar Navidad";
+      headerBtn.title = "Desactivar tema navideño (Admin Yeison)";
+    } else {
+      headerBtn.style.display = "none";
+    }
+  }
+
+  if (adminBannerText) {
+    adminBannerText.innerHTML = isNavidad ? "Activo 🟢" : "Desactivado ⚪";
+  }
+
+  if (adminBannerBtn) {
+    if (isNavidad) {
+      adminBannerBtn.innerHTML = "🎅 Desactivar Modo Navideño: <span id=\"adminNavidadStateText\">Activo 🟢</span>";
+      adminBannerBtn.style.background = "linear-gradient(135deg, #b91c1c, #991b1b)";
+    } else {
+      adminBannerBtn.innerHTML = "🎄 Activar Modo Navideño: <span id=\"adminNavidadStateText\">Desactivado ⚪</span>";
+      adminBannerBtn.style.background = "linear-gradient(135deg, #15803d, #166534)";
+    }
+  }
+
+  if (teamModalNavidadBtn) {
+    if (isNavidad) {
+      teamModalNavidadBtn.innerHTML = "🎅 Desactivar Modo Navideño";
+      teamModalNavidadBtn.style.background = "#b91c1c";
+    } else {
+      teamModalNavidadBtn.innerHTML = "🎄 Activar Modo Navideño";
+      teamModalNavidadBtn.style.background = "#15803d";
+    }
   }
 }
 
-function toggleTheme() {
-  var btn = document.getElementById("themeToggleBtn");
-  var isH = document.body.classList.toggle("halloween-mode");
-  if (btn) btn.innerHTML = isH ? "👻 Normal" : "🎃 Halloween";
-  localStorage.setItem("efi_theme", isH ? "halloween" : "normal");
+function promptAdminNavidadToggle() {
+  // Verificar si Yeison Oyola ya se encuentra autenticado en el sistema
+  if (STATE.verifiedCC === CC_YEISON_OYOLA || STATE.currentUserRole === "yeison") {
+    toggleNavidadTheme();
+    return;
+  }
+
+  // Si no está autenticado, solicitar la cédula del Administrador Yeison
+  var inputCC = prompt("🎄 Control de Tema Navideño (Exclusivo Administrador):\nPor favor ingresa la cédula de Yeison Oyola para cambiar el modo:");
+  if (inputCC === null) return;
+
+  var cleanCC = inputCC.trim();
+  if (cleanCC === CC_YEISON_OYOLA) {
+    STATE.currentUserRole = "yeison";
+    STATE.verifiedCC = cleanCC;
+    localStorage.setItem("efi_verified_cc", cleanCC);
+
+    var yBanner = document.getElementById("yeisonBanner");
+    if (yBanner) yBanner.classList.add("yeison");
+    var aWrap = document.getElementById("adminBannerWrap");
+    if (aWrap) aWrap.style.display = "block";
+
+    toggleNavidadTheme();
+  } else {
+    alert("⛔ Acceso denegado: Solo el Administrador Yeison Oyola (" + CC_YEISON_OYOLA + ") tiene autorización para activar o desactivar el tema navideño.");
+  }
+}
+
+function toggleNavidadTheme() {
+  // Asegurar que solo Yeison Oyola pueda ejecutar esta acción
+  if (STATE.verifiedCC !== CC_YEISON_OYOLA && STATE.currentUserRole !== "yeison") {
+    promptAdminNavidadToggle();
+    return;
+  }
+
+  var isNavidad = document.body.classList.toggle("navidad-mode");
+  if (isNavidad) {
+    localStorage.setItem("efi_theme", "navidad");
+    createSnowflakes();
+    updateNavidadUI(true);
+    alert("🎄🎅 ¡Modo Navideño activado exitosamente por Administrador Yeison Oyola!\nDisfruta el ambiente festivo en el tablero.");
+  } else {
+    localStorage.setItem("efi_theme", "normal");
+    removeSnowflakes();
+    updateNavidadUI(false);
+    alert("⚪ Modo normal restablecido. El botón navideño del encabezado se ha ocultado.");
+  }
+}
+
+function createSnowflakes() {
+  var overlay = document.getElementById("snowOverlay");
+  if (!overlay) return;
+  overlay.innerHTML = "";
+  overlay.style.display = "block";
+  var icons = ["❄", "❅", "❆", "✨", "⭐"];
+  var count = 35;
+  for (var i = 0; i < count; i++) {
+    var flake = document.createElement("div");
+    flake.className = "snowflake";
+    flake.textContent = icons[Math.floor(Math.random() * icons.length)];
+    flake.style.left = (Math.random() * 100) + "vw";
+    var duration = 5 + Math.random() * 8;
+    var delay = Math.random() * 6;
+    var size = 12 + Math.random() * 16;
+    var opacity = 0.4 + Math.random() * 0.6;
+    flake.style.animationDuration = duration + "s";
+    flake.style.animationDelay = delay + "s";
+    flake.style.fontSize = size + "px";
+    flake.style.opacity = opacity;
+    if (Math.random() > 0.65) {
+      flake.style.color = "#fde047";
+    } else {
+      flake.style.color = "#bae6fd";
+    }
+    overlay.appendChild(flake);
+  }
+}
+
+function removeSnowflakes() {
+  var overlay = document.getElementById("snowOverlay");
+  if (overlay) {
+    overlay.innerHTML = "";
+    overlay.style.display = "none";
+  }
 }
 
 function escapeHtml(str) {
