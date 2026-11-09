@@ -911,6 +911,12 @@ tr:hover td { background: #fbfcfe; }
   color: #1e40af;
   display: flex !important;
 }
+.role-banner.admin {
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  color: #5b21b6;
+  display: flex !important;
+}
 
 /* Bandeja de Tareas Recibidas (Aceptar / Rechazar) */
 .inbox-card {
@@ -1145,6 +1151,11 @@ body.navidad-mode #themeToggleBtn {
         📝 Publicar / Editar Mi Agenda
       </button>
 
+      <!-- BOTÓN GESTIÓN DE EQUIPO Y PERMISOS DE ADMINISTRADOR (EXCLUSIVO ADMINISTRADORES) -->
+      <button type="button" class="btn" id="openTeamAdminBtn" onclick="promptAdminTeamModal()" title="Gestión de Colaboradores y Permisos de Administrador (Exclusivo Administradores)" style="background:#f5f3ff; color:#6d28d9; border:1px solid #d8b4fe; font-weight:800; display:none;">
+        🛡️ Permisos Admin
+      </button>
+
       <!-- BOTÓN DESCARGAR INFORME PDF -->
       <button type="button" class="btn btn-pdf" id="downloadPdfBtn" onclick="generatePdfReport()" title="Descargar informe oficial en PDF">
         📄 Descargar Informe PDF
@@ -1350,7 +1361,7 @@ body.navidad-mode #themeToggleBtn {
           </div>
         </div>
         <button type="button" class="btn btn-purple" onclick="openTeamModal()">
-          ⚙️ Gestionar Equipo
+          ⚙️ Gestionar Equipo y Permisos
         </button>
       </div>
 
@@ -1370,9 +1381,25 @@ body.navidad-mode #themeToggleBtn {
             🎄 Modo Navideño: <span id="adminNavidadStateText">Desactivado ⚪</span>
           </button>
           <button type="button" class="btn btn-purple" onclick="openTeamModal()">
-            ⚙️ Gestionar Equipo
+            ⚙️ Gestionar Equipo y Permisos
           </button>
         </div>
+      </div>
+
+      <!-- Banner para Administrador General Autorizado -->
+      <div class="role-banner" id="adminBanner">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:26px;">🛡️</span>
+          <div>
+            <strong id="adminBannerName">¡Bienvenido Administrador!</strong>
+            <div style="font-size:12px; font-weight:normal; margin-top:2px;" id="adminExecutiveSummary">
+              Edición universal, asignación directa y gestión de equipo y permisos habilitadas.
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-purple" onclick="openTeamModal()">
+          ⚙️ Gestionar Equipo y Permisos
+        </button>
       </div>
 
       <!-- Paso 1: Selección y Validación de Identidad -->
@@ -1516,12 +1543,12 @@ body.navidad-mode #themeToggleBtn {
 </div>
 
 <!-- ======================================================== -->
-<!-- MODAL: GESTIÓN DE EQUIPO (SOLO PARA YEISON Y CARLOS)     -->
+<!-- MODAL: GESTIÓN DE EQUIPO Y PERMISOS DE ADMINISTRADOR     -->
 <!-- ======================================================== -->
 <div class="modal-overlay" id="teamModal">
   <div class="modal-content">
     <div class="modal-header">
-      <h3>⚙️ Gestión de Colaboradores (Exclusivo Administradores)</h3>
+      <h3>⚙️ Gestión de Colaboradores y Permisos de Administrador</h3>
       <button type="button" class="modal-close" onclick="closeTeamModal()">&times;</button>
     </div>
 
@@ -1540,6 +1567,37 @@ body.navidad-mode #themeToggleBtn {
         </button>
       </div>
 
+      <!-- Control de Permisos de Administrador (Dar y Quitar) -->
+      <div style="padding:14px; border-radius:12px; background:#faf5ff; border:1px solid #d8b4fe; display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:20px;">🛡️</span>
+            <div>
+              <strong style="color:#581c87; font-size:13px;">Asignación de Permisos de Administrador</strong>
+              <div style="font-size:11px; color:#6b21a8;">Otorga o retira el acceso total al tablero como el que tienen Carlos Cuervo y Yeison Oyola</div>
+            </div>
+          </div>
+          <span style="font-size:11px; background:#f3e8ff; color:#7e22ce; padding:3px 10px; border-radius:20px; font-weight:800; border:1px solid #d8b4fe;">
+            👑 <span id="adminCountBadge">2</span> Administradores Activos
+          </span>
+        </div>
+
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <select class="form-control" id="adminTargetColabSelect" style="font-size:12.5px; flex:1 1 200px; min-width:200px;">
+            <option value="">-- Selecciona un colaborador del equipo --</option>
+          </select>
+          <button type="button" class="btn" id="btnEditColabSelect" onclick="handleEditFromSelect()" style="background:#2563eb; color:#fff; font-weight:800; font-size:12px;" title="Modificar nombre, cargo, teléfono y datos del colaborador">
+            ✏️ Modificar Datos
+          </button>
+          <button type="button" class="btn" id="btnGrantAdmin" onclick="handleGrantAdminFromSelect()" style="background:#7c3aed; color:#fff; font-weight:800; font-size:12px;" title="Otorgar permisos de administrador">
+            👑 Dar Admin
+          </button>
+          <button type="button" class="btn" id="btnRevokeAdmin" onclick="handleRevokeAdminFromSelect()" style="background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; font-weight:800; font-size:12px;" title="Quitar permisos de administrador">
+            🚫 Quitar Admin
+          </button>
+        </div>
+      </div>
+
       <div style="padding:14px; border-radius:12px; background:#f8fafc; border:1px solid var(--border); display:flex; flex-direction:column; gap:10px;">
         <span style="font-size:13px; font-weight:800; color:var(--accent-2);">➕ Agregar Nuevo Colaborador</span>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
@@ -1548,6 +1606,10 @@ body.navidad-mode #themeToggleBtn {
           <input type="text" class="form-control" id="newColabCargo" placeholder="Cargo (GESTOR, CATALIZADOR, etc.)"/>
           <input type="text" class="form-control" id="newColabPhone" placeholder="Teléfono"/>
         </div>
+        <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:#4338ca; cursor:pointer;">
+          <input type="checkbox" id="newColabIsAdmin" />
+          <span>👑 Conceder permisos de Administrador al registrar</span>
+        </label>
         <button type="button" class="btn btn-primary" onclick="addNewCollaborator()">Registrar en el Equipo</button>
       </div>
 
@@ -1556,13 +1618,14 @@ body.navidad-mode #themeToggleBtn {
         <span>👥 Colaboradores Activos (<span id="teamCountActive">0</span>)</span>
         <span style="font-size:11px; font-weight:normal; color:var(--muted);">Visibles en el tablero principal</span>
       </div>
-      <div style="max-height:170px; overflow-y:auto; border-radius:8px; border:1px solid var(--border); margin-top:4px;">
+      <div style="max-height:220px; overflow-y:auto; border-radius:8px; border:1px solid var(--border); margin-top:4px;">
         <table id="teamTableActivos">
           <thead>
             <tr>
               <th>Nombre</th>
               <th>Cargo</th>
-              <th style="width:100px;">Acción</th>
+              <th style="width:130px; text-align:center;">Permisos</th>
+              <th style="width:260px; text-align:center;">Acciones de Administrador</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -1574,18 +1637,95 @@ body.navidad-mode #themeToggleBtn {
         <span>⏸️ Colaboradores Inactivos / Retirados (<span id="teamCountInactive">0</span>)</span>
         <span style="font-size:11px; font-weight:normal; color:var(--muted);">Haz clic en Reactivar para volver a agregarlos</span>
       </div>
-      <div style="max-height:150px; overflow-y:auto; border-radius:8px; border:1px solid var(--border); margin-top:4px;">
+      <div style="max-height:160px; overflow-y:auto; border-radius:8px; border:1px solid var(--border); margin-top:4px;">
         <table id="teamTableInactivos">
           <thead>
             <tr>
               <th>Nombre</th>
               <th>Cargo</th>
-              <th style="width:120px;">Acción</th>
+              <th style="width:130px; text-align:center;">Permisos</th>
+              <th style="width:180px; text-align:center;">Acciones</th>
             </tr>
           </thead>
           <tbody></tbody>
         </table>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL: EDITAR DATOS DEL COLABORADOR (EXCLUSIVO ADMINS)   -->
+<!-- ======================================================== -->
+<div class="modal-overlay" id="editColabModal" style="z-index: 10000;">
+  <div class="modal-content" style="max-width: 520px;">
+    <div class="modal-header" style="background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; border-radius: 15px 15px 0 0; padding: 14px 20px;">
+      <h3 style="margin:0; font-size: 16px; color: #fff; display: flex; align-items: center; gap: 8px;">
+        <span>✏️</span> Modificar Datos de Colaborador
+      </h3>
+      <button type="button" class="modal-close" style="color: #fff;" onclick="closeEditColabModal()">&times;</button>
+    </div>
+
+    <div class="modal-body" style="padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 10px; padding: 10px 14px; font-size: 12px; color: #5b21b6;">
+        🛡️ <strong>Edición exclusiva para Administradores:</strong> Los cambios de nombre, cargo, teléfono y estado se actualizarán en tiempo real en todo el tablero.
+      </div>
+
+      <!-- Cédula (Lectura) -->
+      <div class="form-group">
+        <label class="form-label" style="font-weight: 700; font-size: 12.5px;">Cédula de Ciudadanía (CC):</label>
+        <input type="text" class="form-control" id="editColabCC" readonly style="background: #f1f5f9; cursor: not-allowed; font-weight: 700; color: #475569;" />
+        <span style="font-size: 11px; color: var(--muted); margin-top: 2px;">Identificador único del colaborador en la base de datos.</span>
+      </div>
+
+      <!-- Nombre Completo -->
+      <div class="form-group">
+        <label class="form-label" style="font-weight: 700; font-size: 12.5px;">Nombre Completo: <span style="color:red;">*</span></label>
+        <input type="text" class="form-control" id="editColabName" placeholder="Ej. MARTHA SANCHEZ" style="font-weight: 600;" />
+      </div>
+
+      <!-- Cargo -->
+      <div class="form-group">
+        <label class="form-label" style="font-weight: 700; font-size: 12.5px;">Cargo: <span style="color:red;">*</span></label>
+        <input type="text" class="form-control" id="editColabCargo" placeholder="Ej. GESTOR, CATALIZADOR, COORDINADOR, etc." style="font-weight: 600;" />
+      </div>
+
+      <!-- Teléfono -->
+      <div class="form-group">
+        <label class="form-label" style="font-weight: 700; font-size: 12.5px;">Teléfono de Contacto:</label>
+        <input type="text" class="form-control" id="editColabPhone" placeholder="Ej. 3164875796" />
+      </div>
+
+      <!-- Estado Activo / Inactivo -->
+      <div class="form-group">
+        <label class="form-label" style="font-weight: 700; font-size: 12.5px;">Estado en el Equipo:</label>
+        <select class="form-control" id="editColabActivo">
+          <option value="true">🟢 Activo (Visible en el tablero)</option>
+          <option value="false">⏸️ Inactivo / Retirado</option>
+        </select>
+      </div>
+
+      <!-- Permisos de Administrador -->
+      <div id="editColabAdminWrap" style="padding: 10px 14px; border-radius: 8px; background: #faf5ff; border: 1px solid #d8b4fe;">
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; color: #581c87; cursor: pointer; margin: 0;">
+          <input type="checkbox" id="editColabIsAdmin" />
+          <span>👑 Conceder permisos de Administrador (Acceso total)</span>
+        </label>
+        <div id="editColabSuperAdminNotice" style="display:none; font-size: 11px; color: #92400e; margin-top: 4px; font-weight: 600;">
+          ⭐ Administrador principal protegido del sistema (no revocable).
+        </div>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+        <button type="button" class="btn" style="background: #e2e8f0; color: #334155;" onclick="closeEditColabModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="saveEditColabBtn" onclick="saveCollaboratorEdits()" style="background: #7c3aed; color: #fff; font-weight: 700;">
+          💾 Guardar Modificaciones
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
     </div>
   </div>
 </div>
@@ -1681,17 +1821,81 @@ var CC_YEISON_OYOLA = "1033693601";
 
 // Colaboradores iniciales pre-cargados
 var INITIAL_COLABS = [
-  { cc: "80248819", nombre: "CARLOS CUERVO", cargo: "COORDINADOR", activo: true },
-  { cc: "1013637300", nombre: "MARTHA SANCHEZ", cargo: "GESTOR", activo: true },
-  { cc: "1022962222", nombre: "MONICA SANCHEZ", cargo: "GESTOR", activo: true },
-  { cc: "80110200", nombre: "CAMILO VARGAS", cargo: "GESTOR", activo: true },
-  { cc: "1015442238", nombre: "PAULA OSORIO", cargo: "CATALIZADOR", activo: true },
-  { cc: "1000456129", nombre: "SOFIA ARANZAZU", cargo: "CATALIZADOR", activo: true },
-  { cc: "1019096832", nombre: "VIVIANA MORENO", cargo: "CATALIZADOR", activo: true },
-  { cc: "1033693601", nombre: "YEISON OYOLA", cargo: "APRENDIZ", activo: true },
-  { cc: "1023867730", nombre: "VALENTINA ALVAREZ", cargo: "APRENDIZ", activo: true },
-  { cc: "1022420272", nombre: "CRISTIAN VEGA", cargo: "ENTRENADOR COMERCIAL", activo: true }
+  { cc: "80248819", nombre: "CARLOS CUERVO", cargo: "COORDINADOR", activo: true, es_admin: true },
+  { cc: "1013637300", nombre: "MARTHA SANCHEZ", cargo: "GESTOR", activo: true, es_admin: false },
+  { cc: "1022962222", nombre: "MONICA SANCHEZ", cargo: "GESTOR", activo: true, es_admin: false },
+  { cc: "80110200", nombre: "CAMILO VARGAS", cargo: "GESTOR", activo: true, es_admin: false },
+  { cc: "1015442238", nombre: "PAULA OSORIO", cargo: "CATALIZADOR", activo: true, es_admin: false },
+  { cc: "1000456129", nombre: "SOFIA ARANZAZU", cargo: "CATALIZADOR", activo: true, es_admin: false },
+  { cc: "1019096832", nombre: "VIVIANA MORENO", cargo: "CATALIZADOR", activo: true, es_admin: false },
+  { cc: "1033693601", nombre: "YEISON OYOLA", cargo: "APRENDIZ", activo: true, es_admin: true },
+  { cc: "1023867730", nombre: "VALENTINA ALVAREZ", cargo: "APRENDIZ", activo: true, es_admin: false },
+  { cc: "1022420272", nombre: "CRISTIAN VEGA", cargo: "ENTRENADOR COMERCIAL", activo: true, es_admin: false }
 ];
+
+// Funciones de gestión y validación de permisos de Administradores
+function isUserAdmin(cc) {
+  if (!cc) return false;
+  var cleanCC = String(cc).trim();
+  if (cleanCC === CC_CARLOS_CUERVO || cleanCC === CC_YEISON_OYOLA) return true;
+  var colab = STATE.colaboradores.find(function(c) { return String(c.cc).trim() === cleanCC; });
+  if (colab && colab.es_admin === true) return true;
+  try {
+    var raw = localStorage.getItem("efi_admin_ccs");
+    if (raw) {
+      var list = JSON.parse(raw);
+      if (Array.isArray(list) && list.includes(cleanCC)) return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
+function isCurrentSessionAdmin() {
+  if (
+    STATE.currentUserRole === "carlos" ||
+    STATE.currentUserRole === "yeison" ||
+    STATE.currentUserRole === "admin"
+  ) {
+    return true;
+  }
+  return isUserAdmin(STATE.verifiedCC);
+}
+
+function updateAdminButtonVisibility() {
+  var btn = document.getElementById("openTeamAdminBtn");
+  if (!btn) return;
+  if (isCurrentSessionAdmin()) {
+    btn.style.display = "inline-flex";
+  } else {
+    btn.style.display = "none";
+  }
+}
+
+function syncLocalAdminsFromColabs() {
+  try {
+    var adminSet = new Set([CC_CARLOS_CUERVO, CC_YEISON_OYOLA]);
+    STATE.colaboradores.forEach(function(c) {
+      if (c.es_admin) adminSet.add(String(c.cc).trim());
+    });
+    localStorage.setItem("efi_admin_ccs", JSON.stringify(Array.from(adminSet)));
+  } catch(e) {}
+}
+
+function updateLocalAdmins(cc, isAdm) {
+  try {
+    var list = [CC_CARLOS_CUERVO, CC_YEISON_OYOLA];
+    var raw = localStorage.getItem("efi_admin_ccs");
+    if (raw) {
+      try { list = JSON.parse(raw); } catch(e) {}
+    }
+    var set = new Set(list);
+    set.add(CC_CARLOS_CUERVO);
+    set.add(CC_YEISON_OYOLA);
+    if (isAdm) set.add(String(cc).trim());
+    else set.delete(String(cc).trim());
+    localStorage.setItem("efi_admin_ccs", JSON.stringify(Array.from(set)));
+  } catch(e) {}
+}
 
 // Estado global de la aplicación
 var STATE = {
@@ -1703,7 +1907,7 @@ var STATE = {
   currentDate: "",
   selectedAttendanceFilter: "",
   viewMode: "list", // 'list' o 'kanban'
-  currentUserRole: null, // 'carlos', 'yeison', 'colab'
+  currentUserRole: null, // 'carlos', 'yeison', 'admin', 'colab'
   verifiedCC: null,
   activeColabCC: null,
   dynamicTasks: {
@@ -1724,6 +1928,7 @@ document.addEventListener("DOMContentLoaded", function() {
   generateDynamicDates();
   populateDateSelector();
   renderDashboard();
+  updateAdminButtonVisibility();
 
   if (sbClient) {
     setupRealtime();
@@ -1742,11 +1947,14 @@ function initSavedSession() {
       STATE.currentUserRole = "carlos";
     } else if (savedCC === CC_YEISON_OYOLA) {
       STATE.currentUserRole = "yeison";
+    } else if (isUserAdmin(savedCC)) {
+      STATE.currentUserRole = "admin";
     } else {
       STATE.currentUserRole = "colab";
     }
     STATE.activeColabCC = savedColab || savedCC;
   }
+  updateAdminButtonVisibility();
 }
 
 function setupDateDetection() {
@@ -1785,7 +1993,15 @@ async function loadAllDataFromSupabase() {
 
     var resColabs = await sbClient.from("colaboradores").select("*").order("nombre", { ascending: true });
     if (resColabs.data && resColabs.data.length > 0) {
-      STATE.colaboradores = resColabs.data;
+      STATE.colaboradores = resColabs.data.map(function(c) {
+        if (c.cc === CC_CARLOS_CUERVO || c.cc === CC_YEISON_OYOLA) {
+          c.es_admin = true;
+        } else {
+          c.es_admin = Boolean(c.es_admin);
+        }
+        return c;
+      });
+      syncLocalAdminsFromColabs();
     }
 
     var resAsist = await sbClient.from("asistencia").select("*");
@@ -1806,6 +2022,7 @@ async function loadAllDataFromSupabase() {
       checkReceivedTasks(STATE.activeColabCC || STATE.verifiedCC);
     }
 
+    updateAdminButtonVisibility();
     document.getElementById("realtimeText").textContent = "En línea";
   } catch (err) {
     console.error("Error Supabase:", err);
@@ -1860,13 +2077,22 @@ function handleRealtimeUpdate(table, payload) {
       else STATE.asistencias.push(newRec);
     }
   } else if (table === "colaboradores") {
+    if (newRec.cc === CC_CARLOS_CUERVO || newRec.cc === CC_YEISON_OYOLA) {
+      newRec.es_admin = true;
+    } else {
+      newRec.es_admin = Boolean(newRec.es_admin);
+    }
     if (eventType === "INSERT") {
       STATE.colaboradores.push(newRec);
     } else if (eventType === "UPDATE") {
       var idxC = STATE.colaboradores.findIndex(function(c) { return c.cc === newRec.cc; });
       if (idxC !== -1) STATE.colaboradores[idxC] = newRec;
+      else STATE.colaboradores.push(newRec);
     }
+    syncLocalAdminsFromColabs();
     populateColabSelector();
+    if (typeof populateAdminTargetSelector === "function") populateAdminTargetSelector();
+    if (typeof renderTeamManagementTable === "function") renderTeamManagementTable();
   } else if (table === "tareas_asignadas") {
     if (eventType === "INSERT") {
       STATE.tareasAsignadas.push(newRec);
@@ -2456,6 +2682,7 @@ function logoutUser() {
   STATE.verifiedCC = null;
   STATE.activeColabCC = null;
   STATE.currentUserRole = null;
+  updateAdminButtonVisibility();
 
   var ccInput = document.getElementById("modalCCInput");
   if (ccInput) ccInput.value = "";
@@ -2477,6 +2704,9 @@ function resetModalForm() {
   
   var yBanner = document.getElementById("yeisonBanner");
   if (yBanner) yBanner.classList.remove("yeison");
+
+  var aBanner = document.getElementById("adminBanner");
+  if (aBanner) aBanner.classList.remove("admin");
   
   var vMsg = document.getElementById("ccValidationMsg");
   if (vMsg) vMsg.textContent = "";
@@ -2500,12 +2730,7 @@ function onColabSelected() {
   localStorage.setItem("efi_active_colab", sel.value);
 
   if (STATE.verifiedCC) {
-    var isAdmin = (
-      STATE.currentUserRole === "carlos" ||
-      STATE.currentUserRole === "yeison" ||
-      STATE.verifiedCC === CC_CARLOS_CUERVO ||
-      STATE.verifiedCC === CC_YEISON_OYOLA
-    );
+    var isAdmin = isCurrentSessionAdmin();
 
     if (isAdmin) {
       checkReceivedTasks(sel.value || STATE.verifiedCC);
@@ -2554,8 +2779,11 @@ function verifyIdentity(isAuto) {
     if (logoutBtn) logoutBtn.style.display = "inline-flex";
     document.getElementById("carlosBanner").classList.add("carlos");
     document.getElementById("yeisonBanner").classList.remove("yeison");
+    var admBanner = document.getElementById("adminBanner");
+    if (admBanner) admBanner.classList.remove("admin");
     if (adminWrap) adminWrap.style.display = "block";
     updateCarlosExecutiveAlert();
+    updateAdminButtonVisibility();
     unlockActivitiesForm();
     return;
   }
@@ -2581,17 +2809,56 @@ function verifyIdentity(isAuto) {
     if (logoutBtn) logoutBtn.style.display = "inline-flex";
     document.getElementById("yeisonBanner").classList.add("yeison");
     document.getElementById("carlosBanner").classList.remove("carlos");
+    var admBanner = document.getElementById("adminBanner");
+    if (admBanner) admBanner.classList.remove("admin");
     if (adminWrap) adminWrap.style.display = "block";
     unlockActivitiesForm();
     if (typeof updateNavidadUI === "function") {
       updateNavidadUI(document.body.classList.contains("navidad-mode"));
     }
+    updateAdminButtonVisibility();
+    return;
+  }
+
+  // 3. ADMINISTRADOR GENERAL AUTORIZADO (Mismos permisos que Yeison o Carlos)
+  if (isUserAdmin(ccEntered)) {
+    var adminColab = STATE.colaboradores.find(function(c) { return String(c.cc).trim() === ccEntered; });
+    var adminName = adminColab ? adminColab.nombre : "Administrador";
+    STATE.currentUserRole = "admin";
+    STATE.verifiedCC = ccEntered;
+    localStorage.setItem("efi_verified_cc", ccEntered);
+
+    if (colabSelect) {
+      if (!colabSelect.value) {
+        colabSelect.value = STATE.activeColabCC || ccEntered;
+      }
+      STATE.activeColabCC = colabSelect.value;
+      localStorage.setItem("efi_active_colab", STATE.activeColabCC);
+    }
+
+    if (msgEl) {
+      msgEl.style.color = "#6d28d9";
+      msgEl.textContent = "✅ Identidad confirmada: " + adminName + " (Administrador). Edición universal y gestión de equipo habilitadas.";
+    }
+    if (logoutBtn) logoutBtn.style.display = "inline-flex";
+    var admBanner = document.getElementById("adminBanner");
+    if (admBanner) {
+      var admNameEl = document.getElementById("adminBannerName");
+      if (admNameEl) admNameEl.textContent = "¡Bienvenido/a " + adminName + " (Administrador/a del Sistema)!";
+      admBanner.classList.add("admin");
+    }
+    document.getElementById("carlosBanner").classList.remove("carlos");
+    document.getElementById("yeisonBanner").classList.remove("yeison");
+    if (adminWrap) adminWrap.style.display = "block";
+    updateAdminExecutiveAlert();
+    updateAdminButtonVisibility();
+    unlockActivitiesForm();
     return;
   }
 
   if (adminWrap) adminWrap.style.display = "none";
 
-  // 3. Colaborador Regular
+  // 4. Colaborador Regular
   if (!selectedCC) {
     var matchedColab = STATE.colaboradores.find(function(c) { return c.cc === ccEntered; });
     if (matchedColab && colabSelect) {
@@ -2620,12 +2887,16 @@ function verifyIdentity(isAuto) {
     if (logoutBtn) logoutBtn.style.display = "inline-flex";
     document.getElementById("carlosBanner").classList.remove("carlos");
     document.getElementById("yeisonBanner").classList.remove("yeison");
+    var admBanner = document.getElementById("adminBanner");
+    if (admBanner) admBanner.classList.remove("admin");
+    updateAdminButtonVisibility();
     unlockActivitiesForm();
   } else {
     if (msgEl) {
       msgEl.style.color = "var(--red)";
       msgEl.textContent = "❌ La cédula ingresada no coincide con el colaborador seleccionado.";
     }
+    updateAdminButtonVisibility();
     document.getElementById("activitiesFormSection").style.display = "none";
   }
 }
@@ -2774,7 +3045,7 @@ async function sendAssignedTask() {
     return;
   }
 
-  var isAdminSender = (senderCC === CC_CARLOS_CUERVO || senderCC === CC_YEISON_OYOLA);
+  var isAdminSender = isUserAdmin(senderCC);
 
   try {
     if (isDirect && isAdminSender) {
@@ -3047,8 +3318,9 @@ function updateDynamicProgress() {
 }
 
 function updateCarlosExecutiveAlert() {
-  var banner = document.getElementById("carlosExecutiveSummary");
-  if (!banner) return;
+  var cBanner = document.getElementById("carlosExecutiveSummary");
+  var aBanner = document.getElementById("adminExecutiveSummary");
+  if (!cBanner && !aBanner) return;
   var date = STATE.currentDate;
   
   var pendingActs = STATE.actividades.filter(function(a) { return a.fecha === date && a.estado === "Pendiente"; });
@@ -3059,10 +3331,17 @@ function updateCarlosExecutiveAlert() {
     return acts.length === 0 && (!ast || ast.estado === "SIN REGISTRO");
   });
 
-  banner.innerHTML = '🔔 <strong>Resumen para el ' + date + ':</strong><br/>' +
+  var summaryHtml = '🔔 <strong>Resumen para el ' + date + ':</strong><br/>' +
     '• <strong>' + pendingActs.length + '</strong> tareas pendientes en el equipo.<br/>' +
     '• <strong>' + sinRegistroColabs.length + '</strong> colaboradores sin publicar agenda: <em>' + 
     (sinRegistroColabs.map(function(c) { return c.nombre.split(' ')[0]; }).join(', ') || 'Ninguno') + '</em>.';
+
+  if (cBanner) cBanner.innerHTML = summaryHtml;
+  if (aBanner) aBanner.innerHTML = summaryHtml;
+}
+
+function updateAdminExecutiveAlert() {
+  updateCarlosExecutiveAlert();
 }
 
 // ========================================================
@@ -3175,7 +3454,9 @@ async function saveAgenda() {
       STATE.verifiedCC === CC_CARLOS_CUERVO ||
       STATE.verifiedCC === CC_YEISON_OYOLA ||
       STATE.currentUserRole === "carlos" ||
-      STATE.currentUserRole === "yeison"
+      STATE.currentUserRole === "yeison" ||
+      STATE.currentUserRole === "admin" ||
+      isUserAdmin(STATE.verifiedCC)
     );
 
     if (isCarlosOrYeison) {
@@ -3203,21 +3484,26 @@ async function saveAgenda() {
 }
 
 // ========================================================
-// 8. GESTIÓN DE EQUIPO (SOLO PARA YEISON Y CARLOS)
+// 8. GESTIÓN DE EQUIPO Y PERMISOS DE ADMINISTRADOR
 // ========================================================
 function promptAdminTeamModal() {
-  if (STATE.verifiedCC === "1033693601" || STATE.verifiedCC === "80248819") {
+  if (isCurrentSessionAdmin()) {
     openTeamModal();
     return;
   }
-  var cc = prompt("🔒 Acceso Administrativo para Gestión de Equipo:\nPor favor ingresa la cédula de Yeison Oyola o Carlos Cuervo:");
+  var cc = prompt("🔒 Acceso Administrativo para Gestión de Equipo y Permisos:\n\nPor favor ingresa tu número de cédula de Administrador (ej. Yeison Oyola, Carlos Cuervo u otro administrador autorizado):");
   if (!cc) return;
   cc = cc.trim();
-  if (cc === "1033693601" || cc === "80248819") {
+  if (isUserAdmin(cc)) {
     STATE.verifiedCC = cc;
+    if (cc === CC_CARLOS_CUERVO) STATE.currentUserRole = "carlos";
+    else if (cc === CC_YEISON_OYOLA) STATE.currentUserRole = "yeison";
+    else STATE.currentUserRole = "admin";
+    localStorage.setItem("efi_verified_cc", cc);
+    updateAdminButtonVisibility();
     openTeamModal();
   } else {
-    alert("⛔ Cédula no autorizada. Solo los administradores pueden gestionar el equipo.");
+    alert("⛔ Cédula no autorizada. Solo los administradores pueden gestionar el equipo y otorgar o retirar permisos.");
   }
 }
 
@@ -3230,11 +3516,237 @@ function openTeamModal() {
     navWrap.style.display = isYeison ? "flex" : "none";
   }
   renderTeamManagementTable();
+  populateAdminTargetSelector();
 }
 
 function closeTeamModal() {
   var modal = document.getElementById("teamModal");
   if (modal) modal.classList.remove("open");
+}
+
+function populateAdminTargetSelector() {
+  var sel = document.getElementById("adminTargetColabSelect");
+  if (!sel) return;
+  var currentVal = sel.value;
+  var activeColabs = STATE.colaboradores.filter(function(c) { return c.activo !== false; });
+  
+  var adminCount = 0;
+  var html = '<option value="">-- Selecciona un colaborador del equipo --</option>';
+  activeColabs.forEach(function(c) {
+    var admin = isUserAdmin(c.cc);
+    if (admin) adminCount++;
+    var tag = admin ? " [👑 Administrador]" : " [👤 Colaborador]";
+    html += '<option value="' + c.cc + '">' + escapeHtml(c.nombre) + ' (' + escapeHtml(c.cargo) + ')' + tag + '</option>';
+  });
+  sel.innerHTML = html;
+  if (currentVal) sel.value = currentVal;
+  
+  var badge = document.getElementById("adminCountBadge");
+  if (badge) badge.textContent = adminCount;
+}
+
+function handleEditFromSelect() {
+  var sel = document.getElementById("adminTargetColabSelect");
+  var cc = sel ? sel.value : "";
+  if (!cc) {
+    alert("Por favor selecciona primero un colaborador de la lista.");
+    return;
+  }
+  openEditColabModal(cc);
+}
+
+function openEditColabModal(cc) {
+  if (!isCurrentSessionAdmin()) {
+    alert("⛔ Acceso denegado: Solo los Administradores autorizados pueden modificar los datos de los colaboradores.");
+    return;
+  }
+  var cleanCC = String(cc).trim();
+  var colab = STATE.colaboradores.find(function(c) { return String(c.cc).trim() === cleanCC; });
+  if (!colab) {
+    alert("Colaborador no encontrado.");
+    return;
+  }
+
+  document.getElementById("editColabCC").value = colab.cc;
+  document.getElementById("editColabName").value = colab.nombre || "";
+  document.getElementById("editColabCargo").value = colab.cargo || "";
+  document.getElementById("editColabPhone").value = colab.telefono || "";
+  document.getElementById("editColabActivo").value = (colab.activo !== false) ? "true" : "false";
+
+  var isAdmin = isUserAdmin(colab.cc);
+  var adminCheck = document.getElementById("editColabIsAdmin");
+  var superAdminNotice = document.getElementById("editColabSuperAdminNotice");
+  var isSuper = (colab.cc === CC_CARLOS_CUERVO || colab.cc === CC_YEISON_OYOLA);
+
+  if (adminCheck) {
+    adminCheck.checked = isAdmin;
+    adminCheck.disabled = isSuper;
+  }
+  if (superAdminNotice) {
+    superAdminNotice.style.display = isSuper ? "block" : "none";
+  }
+
+  var modal = document.getElementById("editColabModal");
+  if (modal) modal.classList.add("open");
+}
+
+function closeEditColabModal() {
+  var modal = document.getElementById("editColabModal");
+  if (modal) modal.classList.remove("open");
+}
+
+async function saveCollaboratorEdits() {
+  if (!isCurrentSessionAdmin()) {
+    alert("⛔ Acceso denegado: Solo los administradores pueden guardar modificaciones.");
+    return;
+  }
+
+  var cc = (document.getElementById("editColabCC").value || "").trim();
+  var name = (document.getElementById("editColabName").value || "").trim();
+  var cargo = (document.getElementById("editColabCargo").value || "").trim().toUpperCase();
+  var phone = (document.getElementById("editColabPhone").value || "").trim();
+  var activo = document.getElementById("editColabActivo").value === "true";
+  var isAdmin = document.getElementById("editColabIsAdmin") ? document.getElementById("editColabIsAdmin").checked : false;
+
+  if (!name || !cargo) {
+    alert("Por favor ingresa al menos Nombre Completo y Cargo.");
+    return;
+  }
+
+  var isSuper = (cc === CC_CARLOS_CUERVO || cc === CC_YEISON_OYOLA);
+  if (isSuper) {
+    isAdmin = true; // Carlos y Yeison siempre mantienen permisos de administrador
+  }
+
+  var saveBtn = document.getElementById("saveEditColabBtn");
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Guardando...";
+  }
+
+  try {
+    if (sbClient) {
+      var res = await sbClient.from("colaboradores").update({
+        nombre: name,
+        cargo: cargo,
+        telefono: phone,
+        activo: activo,
+        es_admin: isAdmin
+      }).eq("cc", cc);
+
+      if (res.error) throw res.error;
+      await loadAllDataFromSupabase();
+    } else {
+      var c = STATE.colaboradores.find(function(x) { return x.cc === cc; });
+      if (c) {
+        c.nombre = name;
+        c.cargo = cargo;
+        c.telefono = phone;
+        c.activo = activo;
+        c.es_admin = isAdmin;
+      }
+      updateLocalAdmins(cc, isAdmin);
+      renderDashboard();
+    }
+
+    updateLocalAdmins(cc, isAdmin);
+    updateAdminButtonVisibility();
+    populateColabSelector();
+    populateAdminTargetSelector();
+    renderTeamManagementTable();
+
+    alert("✅ ¡Datos de " + name + " actualizados con éxito!");
+    closeEditColabModal();
+  } catch (err) {
+    console.error("Error al actualizar colaborador:", err);
+    alert("Error al actualizar colaborador en Supabase: " + (err.message || err));
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = "💾 Guardar Modificaciones";
+    }
+  }
+}
+
+function handleGrantAdminFromSelect() {
+  var sel = document.getElementById("adminTargetColabSelect");
+  var cc = sel ? sel.value : "";
+  if (!cc) {
+    alert("Por favor selecciona primero un colaborador de la lista.");
+    return;
+  }
+  if (isUserAdmin(cc)) {
+    alert("Este colaborador ya cuenta con permisos de Administrador.");
+    return;
+  }
+  toggleAdminPermission(cc, true);
+}
+
+function handleRevokeAdminFromSelect() {
+  var sel = document.getElementById("adminTargetColabSelect");
+  var cc = sel ? sel.value : "";
+  if (!cc) {
+    alert("Por favor selecciona primero un colaborador de la lista.");
+    return;
+  }
+  if (!isUserAdmin(cc)) {
+    alert("Este colaborador no tiene permisos de Administrador actualmente.");
+    return;
+  }
+  toggleAdminPermission(cc, false);
+}
+
+async function toggleAdminPermission(cc, newAdminState) {
+  var cleanCC = String(cc).trim();
+  if (!cleanCC) return;
+
+  if (cleanCC === CC_CARLOS_CUERVO || cleanCC === CC_YEISON_OYOLA) {
+    if (!newAdminState) {
+      alert("⛔ No es posible revocar los permisos de administrador principal a Carlos Cuervo o Yeison Oyola.");
+      return;
+    }
+  }
+
+  if (!isCurrentSessionAdmin()) {
+    alert("⛔ Acción no autorizada. Solo un Administrador puede modificar permisos.");
+    return;
+  }
+
+  var c = STATE.colaboradores.find(function(x) { return String(x.cc).trim() === cleanCC; });
+  var nombre = c ? c.nombre : cleanCC;
+  var accion = newAdminState ? "OTORGAR PERMISOS DE ADMINISTRADOR a" : "REVOCAR PERMISOS DE ADMINISTRADOR a";
+
+  var confirmMsg = "¿Estás seguro de " + accion + " " + nombre + "?\n\n" +
+    (newAdminState 
+      ? "✅ Este usuario tendrá exactamente los mismos permisos que Yeison Oyola y Carlos Cuervo:\n• Edición universal de agendas de cualquier colaborador\n• Asignación directa de tareas de coordinación\n• Gestión de colaboradores y permisos en este panel"
+      : "⚠️ Este usuario volverá a ser un Colaborador regular y perderá el acceso a edición universal y gestión administrativa.");
+
+  if (!confirm(confirmMsg)) return;
+
+  try {
+    if (sbClient) {
+      var res = await sbClient.from("colaboradores").update({ es_admin: newAdminState }).eq("cc", cleanCC);
+      if (res.error) throw res.error;
+      await loadAllDataFromSupabase();
+    } else {
+      if (c) c.es_admin = newAdminState;
+      updateLocalAdmins(cleanCC, newAdminState);
+      renderDashboard();
+    }
+
+    updateLocalAdmins(cleanCC, newAdminState);
+    updateAdminButtonVisibility();
+    renderTeamManagementTable();
+    populateAdminTargetSelector();
+
+    alert(newAdminState 
+      ? ("👑 ¡Permisos de Administrador concedidos con éxito a " + nombre + "!\nAhora cuenta con los mismos privilegios administrativos que Yeison Oyola y Carlos Cuervo.")
+      : ("🛡️ Permisos de Administrador revocados a " + nombre + " con éxito.")
+    );
+  } catch (err) {
+    console.error("Error al modificar permisos:", err);
+    alert("Error al actualizar permisos en la base de datos: " + (err.message || err));
+  }
 }
 
 function renderTeamManagementTable() {
@@ -3251,18 +3763,40 @@ function renderTeamManagementTable() {
 
   if (tbodyAct) {
     if (activos.length === 0) {
-      tbodyAct.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--muted); padding:10px;">No hay colaboradores activos en este momento.</td></tr>';
+      tbodyAct.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--muted); padding:10px;">No hay colaboradores activos en este momento.</td></tr>';
     } else {
       tbodyAct.innerHTML = activos.map(function(c) {
+        var isSuperAdmin = (c.cc === CC_CARLOS_CUERVO || c.cc === CC_YEISON_OYOLA);
+        var isAdmin = isUserAdmin(c.cc);
+        
+        var permBadge = "";
+        var adminActionBtn = "";
+
+        if (c.cc === CC_CARLOS_CUERVO) {
+          permBadge = '<span style="background:#fef3c7; color:#92400e; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:800; border:1px solid #fde68a;">👑 Super Admin</span>';
+          adminActionBtn = '<span style="font-size:11px; color:#94a3b8; font-style:italic;">Coordinador Principal</span>';
+        } else if (c.cc === CC_YEISON_OYOLA) {
+          permBadge = '<span style="background:#dbeafe; color:#1e40af; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:800; border:1px solid #bfdbfe;">👑 Super Admin</span>';
+          adminActionBtn = '<span style="font-size:11px; color:#94a3b8; font-style:italic;">Admin Sistema</span>';
+        } else if (isAdmin) {
+          permBadge = '<span style="background:#ede9fe; color:#6d28d9; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:800; border:1px solid #ddd6fe;">🛡️ Administrador</span>';
+          adminActionBtn = '<button type="button" class="btn" style="padding:4px 8px; font-size:11px; background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-weight:700;" onclick="toggleAdminPermission(\'' + c.cc + '\', false)" title="Quitar permisos de administrador">🚫 Quitar Admin</button>';
+        } else {
+          permBadge = '<span style="background:#f1f5f9; color:#475569; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:600;">Colaborador</span>';
+          adminActionBtn = '<button type="button" class="btn" style="padding:4px 8px; font-size:11px; background:#f5f3ff; color:#6d28d9; border:1px solid #ddd6fe; font-weight:700;" onclick="toggleAdminPermission(\'' + c.cc + '\', true)" title="Dar permisos de administrador">👑 Dar Admin</button>';
+        }
+
+        var editBtn = '<button type="button" class="btn" style="padding:4px 8px; font-size:11px; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-weight:700; margin-right:4px;" onclick="openEditColabModal(\'' + c.cc + '\')" title="Modificar nombre, cargo, teléfono y datos">✏️ Editar</button>';
+
+        var retireBtn = isSuperAdmin 
+          ? '' 
+          : '<button type="button" class="btn" style="padding:4px 8px; font-size:11px; background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; font-weight:700; margin-left:4px;" onclick="toggleColabStatus(\'' + c.cc + '\', false)">🚫 Retirar</button>';
+
         return '<tr>' +
           '<td style="font-weight:700;">' + escapeHtml(c.nombre) + '</td>' +
           '<td>' + escapeHtml(c.cargo) + '</td>' +
-          '<td style="text-align:center;">' +
-            '<button type="button" class="btn" style="padding:4px 10px; font-size:11px; background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; font-weight:700;" ' +
-                    'onclick="toggleColabStatus(\'' + c.cc + '\', false)">' +
-              '🚫 Retirar' +
-            '</button>' +
-          '</td>' +
+          '<td style="text-align:center;">' + permBadge + '</td>' +
+          '<td style="text-align:center; white-space:nowrap;">' + editBtn + adminActionBtn + retireBtn + '</td>' +
         '</tr>';
       }).join('');
     }
@@ -3270,17 +3804,23 @@ function renderTeamManagementTable() {
 
   if (tbodyInact) {
     if (inactivos.length === 0) {
-      tbodyInact.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--muted); padding:10px;">No hay colaboradores inactivos.</td></tr>';
+      tbodyInact.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--muted); padding:10px;">No hay colaboradores inactivos.</td></tr>';
     } else {
       tbodyInact.innerHTML = inactivos.map(function(c) {
+        var isAdmin = isUserAdmin(c.cc);
+        var permBadge = isAdmin
+          ? '<span style="background:#ede9fe; color:#6d28d9; padding:2px 7px; border-radius:10px; font-size:10.5px; font-weight:700;">🛡️ Admin</span>'
+          : '<span style="color:#94a3b8; font-size:11px;">Colaborador</span>';
+
+        var editBtn = '<button type="button" class="btn" style="padding:4px 8px; font-size:11px; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-weight:700; margin-right:4px;" onclick="openEditColabModal(\'' + c.cc + '\')" title="Modificar nombre, cargo, teléfono y datos">✏️ Editar</button>';
+
         return '<tr>' +
           '<td style="font-weight:700; color:#64748b;">' + escapeHtml(c.nombre) + '</td>' +
           '<td style="color:#64748b;">' + escapeHtml(c.cargo) + '</td>' +
-          '<td style="text-align:center;">' +
-            '<button type="button" class="btn" style="padding:4px 10px; font-size:11px; background:#dcfce7; color:#15803d; border:1px solid #86efac; font-weight:700;" ' +
-                    'onclick="toggleColabStatus(\'' + c.cc + '\', true)">' +
-              '🟢 Reactivar' +
-            '</button>' +
+          '<td style="text-align:center;">' + permBadge + '</td>' +
+          '<td style="text-align:center; white-space:nowrap;">' +
+            editBtn +
+            '<button type="button" class="btn" style="padding:4px 10px; font-size:11px; background:#dcfce7; color:#15803d; border:1px solid #86efac; font-weight:700;" onclick="toggleColabStatus(\'' + c.cc + '\', true)">🟢 Reactivar</button>' +
           '</td>' +
         '</tr>';
       }).join('');
@@ -3293,6 +3833,7 @@ async function addNewCollaborator() {
   var cc = (document.getElementById("newColabCC").value || "").trim();
   var cargo = (document.getElementById("newColabCargo").value || "").trim().toUpperCase();
   var phone = (document.getElementById("newColabPhone").value || "").trim();
+  var isAdmin = document.getElementById("newColabIsAdmin") ? document.getElementById("newColabIsAdmin").checked : false;
 
   if (!name || !cc || !cargo) {
     alert("Por favor diligencia Nombre, Cédula y Cargo.");
@@ -3306,20 +3847,25 @@ async function addNewCollaborator() {
         cc: cc,
         cargo: cargo,
         telefono: phone,
-        activo: true
+        activo: true,
+        es_admin: isAdmin
       });
       if (res.error) throw res.error;
     } else {
-      STATE.colaboradores.push({ nombre: name, cc: cc, cargo: cargo, telefono: phone, activo: true });
+      STATE.colaboradores.push({ nombre: name, cc: cc, cargo: cargo, telefono: phone, activo: true, es_admin: isAdmin });
+      if (isAdmin) updateLocalAdmins(cc, true);
     }
 
-    alert("✅ ¡Colaborador registrado con éxito en el equipo!");
+    alert("✅ ¡Colaborador registrado con éxito en el equipo!" + (isAdmin ? "\n👑 Con permisos de Administrador concedidos." : ""));
     document.getElementById("newColabName").value = "";
     document.getElementById("newColabCC").value = "";
     document.getElementById("newColabCargo").value = "";
     document.getElementById("newColabPhone").value = "";
+    if (document.getElementById("newColabIsAdmin")) document.getElementById("newColabIsAdmin").checked = false;
+    
     if (sbClient) await loadAllDataFromSupabase();
     else { populateColabSelector(); renderDashboard(); renderTeamManagementTable(); }
+    populateAdminTargetSelector();
   } catch (err) {
     alert("Error al agregar colaborador: " + err.message);
   }
