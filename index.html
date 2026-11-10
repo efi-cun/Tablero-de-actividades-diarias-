@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>TABLERO • Gestión EFI en Línea</title>
 
-<!-- Librerías Locales: Supabase y Generador de PDF -->
+<!-- Librerías Locales: Supabase, Generador de PDF y Generador de Excel -->
 <script src="supabase.min.js"></script>
 <script>
 if (typeof supabase === 'undefined') {
@@ -14,6 +14,12 @@ if (typeof supabase === 'undefined') {
 </script>
 <script src="jspdf.umd.min.js"></script>
 <script src="jspdf.plugin.autotable.min.js"></script>
+<script src="xlsx.full.min.js"></script>
+<script>
+if (typeof XLSX === 'undefined') {
+  document.write('<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"><\/script>');
+}
+</script>
 
 <style>
 :root {
@@ -1161,6 +1167,11 @@ body.navidad-mode #themeToggleBtn {
         📄 Descargar Informe PDF
       </button>
 
+      <!-- BOTÓN DESCARGAR EXCEL (EXCLUSIVO ADMINISTRADORES) -->
+      <button type="button" class="btn" id="downloadExcelAdminBtn" onclick="exportDataToExcel()" title="Descargar informe completo en Excel (.xlsx) (Exclusivo Administradores)" style="background:linear-gradient(135deg, #16a34a, #15803d); color:#fff; border:none; font-weight:800; display:none;">
+        📊 Descargar Excel
+      </button>
+
       <!-- BOTÓN MODO NAVIDEÑO (ACTIVACIÓN ADMIN YEISON - OCULTO CUANDO ESTÁ DESACTIVADO) -->
       <button type="button" class="btn" id="themeToggleBtn" onclick="promptAdminNavidadToggle()" title="Control de Tema Navideño (Exclusivo Administrador Yeison)" style="display:none;">
         🎄 Modo Navidad
@@ -1259,9 +1270,18 @@ body.navidad-mode #themeToggleBtn {
         <input type="text" id="globalSearchInput" placeholder="Buscar por colaborador, cargo, fecha o actividad..."/>
       </div>
 
-      <div class="date-box" title="Cambiar fecha a consultar">
-        <span>📅</span>
-        <select id="dateSelect" aria-label="Fecha a consultar"></select>
+      <!-- Filtro de Fecha: Selector con fechas registradas + Calendario interactivo -->
+      <div class="date-filter-wrap" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <div class="date-box" title="Fechas con actividades registradas">
+          <span style="font-size:16px;">📌</span>
+          <select id="dateSelect" aria-label="Fecha a consultar" onchange="onDateSelectChanged(this.value)"></select>
+        </div>
+
+        <div class="date-box" title="Elegir cualquier fecha desde el calendario (ej: Diciembre)">
+          <span style="font-size:16px;">📅</span>
+          <input type="date" id="calendarDateFilter" style="border:none; outline:none; background:transparent; font-size:13px; font-weight:700; color:var(--text); cursor:pointer;" title="Selecciona cualquier día en el calendario" onchange="onCalendarDateChanged(this.value)"/>
+          <button type="button" class="btn" style="padding:4px 8px; font-size:11px; background:#e2e8f0; color:#334155; border:none; border-radius:6px; font-weight:800;" onclick="resetToTodayDate()" title="Ir a la fecha de hoy">Hoy</button>
+        </div>
       </div>
 
       <!-- Conmutador de Vistas: Lista vs Kanban (Camba) -->
@@ -1360,9 +1380,14 @@ body.navidad-mode #themeToggleBtn {
             </div>
           </div>
         </div>
-        <button type="button" class="btn btn-purple" onclick="openTeamModal()">
-          ⚙️ Gestionar Equipo y Permisos
-        </button>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <button type="button" class="btn" onclick="exportDataToExcel()" style="background:#15803d; color:#fff; border:1px solid #86efac; font-weight:800; font-size:12px;" title="Descargar informe completo en Excel (.xlsx)">
+            📊 Descargar Excel
+          </button>
+          <button type="button" class="btn btn-purple" onclick="openTeamModal()">
+            ⚙️ Gestionar Equipo y Permisos
+          </button>
+        </div>
       </div>
 
       <!-- Banner para Yeison Oyola (Administrador y Gestión) -->
@@ -1377,6 +1402,12 @@ body.navidad-mode #themeToggleBtn {
           </div>
         </div>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <button type="button" class="btn" onclick="exportDataToExcel()" style="background:#15803d; color:#fff; border:1px solid #86efac; font-weight:800; font-size:12px;" title="Descargar informe completo en Excel (.xlsx)">
+            📊 Descargar Excel
+          </button>
+          <button type="button" class="btn" id="btnAdminAssignToggle" onclick="toggleAssignTaskModule()" style="background:linear-gradient(135deg, #475569, #334155); color:#fff; border:1px solid #94a3b8; font-weight:800; font-size:12px;" title="Activar o desactivar panel de enviar tareas a compañeros">
+            📤 Enviar Tareas: <span id="adminAssignStateText">Desactivado ⚪</span>
+          </button>
           <button type="button" class="btn" id="btnAdminNavidadToggle" onclick="toggleNavidadTheme()" style="background:linear-gradient(135deg, #15803d, #b91c1c); color:#fff; border:1px solid #fbbf24; font-weight:800; font-size:12px;" title="Activar o desactivar tema navideño para el tablero">
             🎄 Modo Navideño: <span id="adminNavidadStateText">Desactivado ⚪</span>
           </button>
@@ -1397,9 +1428,14 @@ body.navidad-mode #themeToggleBtn {
             </div>
           </div>
         </div>
-        <button type="button" class="btn btn-purple" onclick="openTeamModal()">
-          ⚙️ Gestionar Equipo y Permisos
-        </button>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <button type="button" class="btn" onclick="exportDataToExcel()" style="background:#15803d; color:#fff; border:1px solid #86efac; font-weight:800; font-size:12px;" title="Descargar informe completo en Excel (.xlsx)">
+            📊 Descargar Excel
+          </button>
+          <button type="button" class="btn btn-purple" onclick="openTeamModal()">
+            ⚙️ Gestionar Equipo y Permisos
+          </button>
+        </div>
       </div>
 
       <!-- Paso 1: Selección y Validación de Identidad -->
@@ -1484,10 +1520,24 @@ body.navidad-mode #themeToggleBtn {
           </div>
         </div>
 
+        <!-- Control Exclusivo de Activación para Yeison Oyola dentro del Formulario -->
+        <div id="yeisonAssignTaskControlWrap" style="display:none; padding:10px 14px; border-radius:10px; background:#eff6ff; border:1px dashed #60a5fa; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:18px;">📤</span>
+            <div>
+              <strong style="font-size:12.5px; color:#1e40af;">Panel Enviar Tareas a Compañero (Control Admin Yeison)</strong>
+              <div style="font-size:11px; color:#64748b;" id="yeisonModalAssignStatusText">Actualmente: Desactivado ⚪ (Oculto para colaboradores)</div>
+            </div>
+          </div>
+          <button type="button" class="btn" id="btnYeisonModalAssignToggle" onclick="toggleAssignTaskModule()" style="background:#2563eb; color:#fff; font-size:11.5px; padding:6px 12px; font-weight:800;">
+            🔓 Activar Panel
+          </button>
+        </div>
+
         <!-- ============================================== -->
         <!-- MÓDULO: ASIGNAR / ENVIAR TAREA A UN COMPAÑERO  -->
         <!-- ============================================== -->
-        <div style="padding:14px; border:1px solid #bfdbfe; border-radius:12px; background:#eff6ff; display:flex; flex-direction:column; gap:10px;">
+        <div id="assignTaskModulePanel" style="display:none; padding:14px; border:1px solid #bfdbfe; border-radius:12px; background:#eff6ff; flex-direction:column; gap:10px;">
           <div style="display:flex; align-items:center; justify-content:space-between;">
             <span style="font-size:13px; font-weight:800; color:#1e40af;">📤 Enviar / Asignar Tarea a un Compañero</span>
             <span style="font-size:11px; color:#3b82f6; font-weight:700;">Colaboración en Equipo</span>
@@ -1549,7 +1599,12 @@ body.navidad-mode #themeToggleBtn {
   <div class="modal-content">
     <div class="modal-header">
       <h3>⚙️ Gestión de Colaboradores y Permisos de Administrador</h3>
-      <button type="button" class="modal-close" onclick="closeTeamModal()">&times;</button>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button type="button" class="btn" onclick="exportDataToExcel()" style="background:#15803d; color:#fff; font-size:12px; font-weight:800; border:none; padding:6px 12px;" title="Exportar toda la base de datos a Excel">
+          📊 Exportar Excel
+        </button>
+        <button type="button" class="modal-close" onclick="closeTeamModal()">&times;</button>
+      </div>
     </div>
 
     <div class="modal-body">
@@ -1564,6 +1619,20 @@ body.navidad-mode #themeToggleBtn {
         </div>
         <button type="button" class="btn" id="teamModalNavidadBtn" onclick="toggleNavidadTheme()" style="background:#15803d; color:#fff; font-weight:800; font-size:12px;">
           🎄 Activar Modo Navideño
+        </button>
+      </div>
+
+      <!-- Control de Módulo Enviar Tareas exclusivo Yeison Oyola -->
+      <div id="teamModalAssignWrap" style="padding:10px 14px; border-radius:10px; background:#eff6ff; border:1px solid #bfdbfe; display:none; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:20px;">📤</span>
+          <div>
+            <strong style="color:#1e40af; font-size:13px;">Panel Enviar Tareas a Compañeros</strong>
+            <div style="font-size:11px; color:#475569;">Control exclusivo para Administrador Yeison Oyola</div>
+          </div>
+        </div>
+        <button type="button" class="btn" id="teamModalAssignBtn" onclick="toggleAssignTaskModule()" style="background:#2563eb; color:#fff; font-weight:800; font-size:12px;">
+          📤 Activar Panel
         </button>
       </div>
 
@@ -1863,12 +1932,10 @@ function isCurrentSessionAdmin() {
 
 function updateAdminButtonVisibility() {
   var btn = document.getElementById("openTeamAdminBtn");
-  if (!btn) return;
-  if (isCurrentSessionAdmin()) {
-    btn.style.display = "inline-flex";
-  } else {
-    btn.style.display = "none";
-  }
+  var excelBtn = document.getElementById("downloadExcelAdminBtn");
+  var isAdmin = isCurrentSessionAdmin();
+  if (btn) btn.style.display = isAdmin ? "inline-flex" : "none";
+  if (excelBtn) excelBtn.style.display = isAdmin ? "inline-flex" : "none";
 }
 
 function syncLocalAdminsFromColabs() {
@@ -1903,6 +1970,7 @@ var STATE = {
   asistencias: [],
   actividades: [],
   tareasAsignadas: [],
+  assignTaskModuleEnabled: (localStorage.getItem("efi_modulo_asignar_tareas") === "true"),
   fechas: [],
   currentDate: "",
   selectedAttendanceFilter: "",
@@ -1929,6 +1997,7 @@ document.addEventListener("DOMContentLoaded", function() {
   populateDateSelector();
   renderDashboard();
   updateAdminButtonVisibility();
+  updateAssignTaskModuleUI(Boolean(STATE.assignTaskModuleEnabled));
 
   if (sbClient) {
     setupRealtime();
@@ -1955,6 +2024,7 @@ function initSavedSession() {
     STATE.activeColabCC = savedColab || savedCC;
   }
   updateAdminButtonVisibility();
+  updateAssignTaskModuleUI(Boolean(STATE.assignTaskModuleEnabled));
 }
 
 function setupDateDetection() {
@@ -1970,18 +2040,27 @@ function setupDateDetection() {
 
 function generateDynamicDates() {
   var dateSet = new Set();
-  var parts = STATE.currentDate.split("-");
-  var year = parseInt(parts[0], 10);
-  var month = parseInt(parts[1], 10);
-  var daysInMonth = new Date(year, month, 0).getDate();
 
-  for (var d = 1; d <= daysInMonth; d++) {
-    dateSet.add(year + "-" + String(month).padStart(2, '0') + "-" + String(d).padStart(2, '0'));
+  // 1. Fechas que REALMENTE tienen actividades registradas
+  STATE.actividades.forEach(function(a) {
+    if (a.fecha) dateSet.add(a.fecha);
+  });
+
+  // 2. Fechas que tienen novedades o asistencias registradas
+  STATE.asistencias.forEach(function(ast) {
+    if (ast.fecha && ast.estado && ast.estado !== "SIN REGISTRO") {
+      dateSet.add(ast.fecha);
+    }
+  });
+
+  // 3. Incluir hoy para facilitar el registro de actividades del día actual
+  var todayStr = getTodayDateString();
+  dateSet.add(todayStr);
+
+  // 4. Si el usuario seleccionó una fecha específica en el calendario (ej: Diciembre), incluirla
+  if (STATE.currentDate && STATE.currentDate !== "ALL") {
+    dateSet.add(STATE.currentDate);
   }
-
-  STATE.actividades.forEach(function(a) { if (a.fecha) dateSet.add(a.fecha); });
-  STATE.asistencias.forEach(function(a) { if (a.fecha) dateSet.add(a.fecha); });
-  dateSet.add(STATE.currentDate);
 
   STATE.fechas = Array.from(dateSet).sort();
 }
@@ -2012,6 +2091,20 @@ async function loadAllDataFromSupabase() {
 
     var resAsig = await sbClient.from("tareas_asignadas").select("*");
     if (resAsig.data) STATE.tareasAsignadas = resAsig.data;
+
+    try {
+      var resConfig = await sbClient.from("configuracion").select("*");
+      if (resConfig.data && resConfig.data.length > 0) {
+        var assignConfig = resConfig.data.find(function(cfg) { return cfg.clave === "modulo_asignar_tareas"; });
+        if (assignConfig) {
+          STATE.assignTaskModuleEnabled = (assignConfig.valor === "true");
+          localStorage.setItem("efi_modulo_asignar_tareas", assignConfig.valor);
+        }
+      }
+    } catch (cfgErr) {
+      console.warn("Advertencia al cargar configuración desde Supabase:", cfgErr);
+    }
+    updateAssignTaskModuleUI(Boolean(STATE.assignTaskModuleEnabled));
 
     generateDynamicDates();
     populateDateSelector();
@@ -2046,6 +2139,9 @@ function setupRealtime() {
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "tareas_asignadas" }, function(payload) {
         handleRealtimeUpdate("tareas_asignadas", payload);
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "configuracion" }, function(payload) {
+        handleRealtimeUpdate("configuracion", payload);
       })
       .subscribe();
   } catch (e) {
@@ -2104,6 +2200,12 @@ function handleRealtimeUpdate(table, payload) {
     if (STATE.verifiedCC) {
       checkReceivedTasks(STATE.activeColabCC || STATE.verifiedCC);
     }
+  } else if (table === "configuracion") {
+    if (newRec && newRec.clave === "modulo_asignar_tareas") {
+      STATE.assignTaskModuleEnabled = (newRec.valor === "true");
+      localStorage.setItem("efi_modulo_asignar_tareas", newRec.valor);
+      updateAssignTaskModuleUI(STATE.assignTaskModuleEnabled);
+    }
   }
   renderDashboard();
 }
@@ -2113,19 +2215,58 @@ function handleRealtimeUpdate(table, payload) {
 // ========================================================
 function populateDateSelector() {
   var select = document.getElementById("dateSelect");
+  var calendarInput = document.getElementById("calendarDateFilter");
   if (!select) return;
-  var optionsHtml = '<option value="ALL"' + (STATE.currentDate === "ALL" ? ' selected' : '') + '>📅 Todas las fechas (Ver Todo)</option>' +
-    STATE.fechas.map(function(f) {
-      return '<option value="' + f + '" ' + (f === STATE.currentDate ? 'selected' : '') + '>' + f + '</option>';
-    }).join('');
+
+  var todayStr = getTodayDateString();
+
+  var optionsHtml = '<option value="ALL"' + (STATE.currentDate === "ALL" ? ' selected' : '') + '>📅 Todas las fechas (Ver Todo)</option>';
+
+  optionsHtml += STATE.fechas.map(function(f) {
+    var isSelected = (f === STATE.currentDate);
+    var actsCount = STATE.actividades.filter(function(a) { return a.fecha === f; }).length;
+    var label = f;
+    if (f === todayStr) label += " (Hoy)";
+    if (actsCount > 0) label += " · " + actsCount + (actsCount === 1 ? " actividad" : " actividades");
+    else if (f === todayStr) label += " · (Sin actividades aún)";
+
+    return '<option value="' + f + '" ' + (isSelected ? 'selected' : '') + '>📅 ' + label + '</option>';
+  }).join('');
+
   select.innerHTML = optionsHtml;
 
-  select.onchange = function(e) {
-    STATE.currentDate = e.target.value;
-    var mDate = document.getElementById("modalDateInput");
-    if (mDate && STATE.currentDate !== "ALL") mDate.value = STATE.currentDate;
-    renderDashboard();
-  };
+  if (calendarInput) {
+    calendarInput.value = (STATE.currentDate !== "ALL" && STATE.currentDate) ? STATE.currentDate : "";
+  }
+}
+
+function onDateSelectChanged(val) {
+  STATE.currentDate = val;
+  var calendarInput = document.getElementById("calendarDateFilter");
+  if (calendarInput) {
+    calendarInput.value = (val !== "ALL") ? val : "";
+  }
+  var mDate = document.getElementById("modalDateInput");
+  if (mDate && val !== "ALL") mDate.value = val;
+  renderDashboard();
+}
+
+function onCalendarDateChanged(val) {
+  if (!val) {
+    onDateSelectChanged("ALL");
+    return;
+  }
+  STATE.currentDate = val;
+  generateDynamicDates();
+  populateDateSelector();
+  var mDate = document.getElementById("modalDateInput");
+  if (mDate) mDate.value = val;
+  renderDashboard();
+}
+
+function resetToTodayDate() {
+  var today = getTodayDateString();
+  onCalendarDateChanged(today);
 }
 
 function populateColabSelector() {
@@ -2914,6 +3055,7 @@ function unlockActivitiesForm() {
   
   checkReceivedTasks(targetCC);
   loadColabDayData();
+  updateAssignTaskModuleUI(Boolean(STATE.assignTaskModuleEnabled));
 }
 
 // ========================================================
@@ -3025,6 +3167,12 @@ async function rejectAssignedTask(taskId) {
 
 // Enviar / Asignar Tarea a un Compañero
 async function sendAssignedTask() {
+  var isYeison = isYeisonUser();
+  if (!STATE.assignTaskModuleEnabled && !isYeison) {
+    alert("⛔ El módulo para enviar tareas a compañeros está actualmente desactivado.");
+    return;
+  }
+
   var targetCC = document.getElementById("assignTargetColabSelect").value;
   var schedule = document.getElementById("assignScheduleSelect").value;
   var detail = (document.getElementById("assignTaskDetail").value || "").trim();
@@ -3510,10 +3658,14 @@ function promptAdminTeamModal() {
 function openTeamModal() {
   var modal = document.getElementById("teamModal");
   if (modal) modal.classList.add("open");
+  var isYeison = (STATE.verifiedCC === CC_YEISON_OYOLA || STATE.currentUserRole === "yeison");
   var navWrap = document.getElementById("teamModalNavidadWrap");
   if (navWrap) {
-    var isYeison = (STATE.verifiedCC === CC_YEISON_OYOLA || STATE.currentUserRole === "yeison");
     navWrap.style.display = isYeison ? "flex" : "none";
+  }
+  var assignWrap = document.getElementById("teamModalAssignWrap");
+  if (assignWrap) {
+    assignWrap.style.display = isYeison ? "flex" : "none";
   }
   renderTeamManagementTable();
   populateAdminTargetSelector();
@@ -4030,6 +4182,186 @@ function generatePdfReport() {
 }
 
 // ========================================================
+// 9.1. EXPORTACIÓN DE INFORME EN EXCEL (.XLSX) - EXCLUSIVO ADMINISTRADORES
+// ========================================================
+function exportDataToExcel() {
+  // 1. Validar que la sesión actual sea de un Administrador
+  if (!isCurrentSessionAdmin()) {
+    var inputCC = prompt("🔒 Descarga de Informe en Excel (Exclusivo Administradores):\n\nPor favor ingresa tu número de cédula de Administrador para autorizar la descarga (ej. Carlos Cuervo o Yeison Oyola):");
+    if (!inputCC) return;
+    var cleanCC = inputCC.trim();
+    if (!isUserAdmin(cleanCC)) {
+      alert("⛔ Acceso denegado: Solo los administradores autorizados pueden descargar el informe en Excel.");
+      return;
+    }
+    // Autenticar sesión
+    STATE.verifiedCC = cleanCC;
+    if (cleanCC === CC_CARLOS_CUERVO) STATE.currentUserRole = "carlos";
+    else if (cleanCC === CC_YEISON_OYOLA) STATE.currentUserRole = "yeison";
+    else STATE.currentUserRole = "admin";
+    localStorage.setItem("efi_verified_cc", cleanCC);
+    updateAdminButtonVisibility();
+  }
+
+  try {
+    var dateFilter = STATE.currentDate;
+    var isAll = (dateFilter === "ALL" || !dateFilter);
+
+    // Preparar mapa de colaboradores y asistencias
+    var colabMap = {};
+    STATE.colaboradores.forEach(function(c) {
+      colabMap[c.cc] = c;
+    });
+
+    var asistMap = {};
+    STATE.asistencias.forEach(function(ast) {
+      asistMap[ast.cc + "_" + ast.fecha] = ast;
+    });
+
+    // 1. Datos de Actividades
+    var actsToExport = STATE.actividades.slice();
+    if (!isAll) {
+      actsToExport = actsToExport.filter(function(a) { return a.fecha === dateFilter; });
+    }
+    actsToExport.sort(function(a, b) {
+      if (a.fecha !== b.fecha) return a.fecha > b.fecha ? -1 : 1;
+      var nameA = (colabMap[a.cc] ? colabMap[a.cc].nombre : "");
+      var nameB = (colabMap[b.cc] ? colabMap[b.cc].nombre : "");
+      return nameA.localeCompare(nameB);
+    });
+
+    var rowsActividades = actsToExport.map(function(a, idx) {
+      var colab = colabMap[a.cc] || { nombre: "Desconocido", cargo: "N/A", telefono: "" };
+      var asist = asistMap[a.cc + "_" + a.fecha] || { estado: "SIN REGISTRO", detalle_novedad: "" };
+
+      return {
+        "N°": idx + 1,
+        "Fecha": a.fecha || "",
+        "Colaborador": colab.nombre,
+        "Cédula": a.cc,
+        "Cargo": colab.cargo,
+        "Teléfono": colab.telefono || "",
+        "Horario": a.horario || "",
+        "Actividad / Detalle": a.detalle || "",
+        "Estado Actividad": a.estado || "Sin estado",
+        "Asistencia del Día": asist.estado || "SIN REGISTRO",
+        "Detalle de Novedad": asist.detalle_novedad || ""
+      };
+    });
+
+    // 2. Datos de Resumen por Colaborador
+    var activeColabs = STATE.colaboradores.filter(function(c) { return c.activo !== false; });
+    var rowsResumen = activeColabs.map(function(c) {
+      var userActs = STATE.actividades.filter(function(a) {
+        if (a.cc !== c.cc) return false;
+        if (!isAll && a.fecha !== dateFilter) return false;
+        return true;
+      });
+      var total = userActs.length;
+      var fin = userActs.filter(function(a) { return a.estado === "Finalizado"; }).length;
+      var prog = userActs.filter(function(a) { return a.estado === "Progreso"; }).length;
+      var pend = userActs.filter(function(a) { return a.estado === "Pendiente"; }).length;
+      var sin = userActs.filter(function(a) { return a.estado === "Sin estado" || !a.estado; }).length;
+      var pct = total > 0 ? Math.round((fin / total) * 100) + "%" : "0%";
+
+      return {
+        "Colaborador": c.nombre,
+        "Cédula": c.cc,
+        "Cargo": c.cargo,
+        "Teléfono": c.telefono || "",
+        "Rol": c.es_admin ? "Administrador" : "Colaborador",
+        "Total Actividades": total,
+        "Finalizadas": fin,
+        "En Progreso": prog,
+        "Pendientes": pend,
+        "Sin Estado": sin,
+        "% Cumplimiento": pct
+      };
+    });
+
+    // 3. Datos de Directorio Completo del Equipo
+    var rowsDirectorio = STATE.colaboradores.map(function(c) {
+      return {
+        "Nombre Completo": c.nombre,
+        "Cédula": c.cc,
+        "Cargo": c.cargo,
+        "Teléfono": c.telefono || "",
+        "Estado": c.activo !== false ? "ACTIVO" : "INACTIVO",
+        "Perfil": c.es_admin ? "ADMINISTRADOR" : "COLABORADOR"
+      };
+    });
+
+    var todayStr = getTodayDateString();
+    var fileName = "Reporte_Gestion_EFI_" + (isAll ? "Todas_Las_Fechas" : dateFilter) + "_" + todayStr + ".xlsx";
+
+    // Si XLSX está disponible, generar libro profesional multihroja
+    if (typeof XLSX !== "undefined") {
+      var wb = XLSX.utils.book_new();
+
+      var wsActs = XLSX.utils.json_to_sheet(rowsActividades.length > 0 ? rowsActividades : [{ "Mensaje": "No hay actividades para el filtro seleccionado" }]);
+      wsActs["!cols"] = [
+        { wch: 6 },  // N°
+        { wch: 12 }, // Fecha
+        { wch: 28 }, // Colaborador
+        { wch: 14 }, // Cédula
+        { wch: 22 }, // Cargo
+        { wch: 14 }, // Teléfono
+        { wch: 22 }, // Horario
+        { wch: 55 }, // Detalle
+        { wch: 16 }, // Estado
+        { wch: 18 }, // Asistencia
+        { wch: 30 }  // Novedad
+      ];
+      XLSX.utils.book_append_sheet(wb, wsActs, isAll ? "Todas las Actividades" : "Actividades " + dateFilter);
+
+      var wsResumen = XLSX.utils.json_to_sheet(rowsResumen);
+      wsResumen["!cols"] = [
+        { wch: 28 }, { wch: 14 }, { wch: 22 }, { wch: 14 }, { wch: 16 },
+        { wch: 16 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 16 }
+      ];
+      XLSX.utils.book_append_sheet(wb, wsResumen, "Resumen Desempeño");
+
+      var wsDir = XLSX.utils.json_to_sheet(rowsDirectorio);
+      wsDir["!cols"] = [
+        { wch: 28 }, { wch: 14 }, { wch: 22 }, { wch: 14 }, { wch: 12 }, { wch: 16 }
+      ];
+      XLSX.utils.book_append_sheet(wb, wsDir, "Directorio Equipo");
+
+      XLSX.writeFile(wb, fileName);
+    } else {
+      // Fallback en CSV con UTF-8 BOM
+      var csvHeaders = ["N°", "Fecha", "Colaborador", "Cédula", "Cargo", "Teléfono", "Horario", "Actividad / Detalle", "Estado Actividad", "Asistencia del Día", "Detalle de Novedad"];
+      var csvRows = [csvHeaders];
+      rowsActividades.forEach(function(r) {
+        csvRows.push([
+          r["N°"], r["Fecha"], '"' + (r["Colaborador"]||"").replace(/"/g, '""') + '"',
+          r["Cédula"], '"' + (r["Cargo"]||"").replace(/"/g, '""') + '"', r["Teléfono"],
+          '"' + (r["Horario"]||"").replace(/"/g, '""') + '"',
+          '"' + (r["Actividad / Detalle"]||"").replace(/"/g, '""') + '"',
+          r["Estado Actividad"], r["Asistencia del Día"],
+          '"' + (r["Detalle de Novedad"]||"").replace(/"/g, '""') + '"'
+        ]);
+      });
+      var csvStr = "\uFEFF" + csvRows.map(function(row) { return row.join(";"); }).join("\r\n");
+      var blob = new Blob([csvStr], { type: "text/csv;charset=utf-8;" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = fileName.replace(".xlsx", ".csv");
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    alert("✅ ¡Informe de Excel generado y descargado exitosamente!\nArchivo: " + fileName);
+  } catch (err) {
+    console.error("Error al exportar a Excel:", err);
+    alert("Error al generar archivo Excel: " + (err.message || err));
+  }
+}
+
+// ========================================================
 // 10. TEMA NORMAL / NAVIDEÑO (EXCLUSIVO ADMIN YEISON OYOLA)
 // ========================================================
 function setupTheme() {
@@ -4177,6 +4509,125 @@ function removeSnowflakes() {
   if (overlay) {
     overlay.innerHTML = "";
     overlay.style.display = "none";
+  }
+}
+
+function isYeisonUser() {
+  return (STATE.verifiedCC === CC_YEISON_OYOLA || STATE.currentUserRole === "yeison");
+}
+
+function promptAdminAssignTaskToggle() {
+  if (isYeisonUser()) {
+    toggleAssignTaskModule();
+    return;
+  }
+  var inputCC = prompt("📤 Control del Módulo Enviar Tareas a Compañeros:\n\nAcceso exclusivo para el Administrador Yeison Oyola.\nPor favor ingresa tu cédula para autorizar:");
+  if (inputCC === null) return;
+  var cleanCC = inputCC.trim();
+  if (cleanCC === CC_YEISON_OYOLA) {
+    STATE.currentUserRole = "yeison";
+    STATE.verifiedCC = cleanCC;
+    localStorage.setItem("efi_verified_cc", cleanCC);
+
+    var yBanner = document.getElementById("yeisonBanner");
+    if (yBanner) yBanner.classList.add("yeison");
+    var aWrap = document.getElementById("adminBannerWrap");
+    if (aWrap) aWrap.style.display = "block";
+    updateAdminButtonVisibility();
+
+    toggleAssignTaskModule();
+  } else {
+    alert("⛔ Acceso denegado: Solo el Administrador Yeison Oyola (" + CC_YEISON_OYOLA + ") tiene autorización para activar o desactivar el panel de envío de actividades.");
+  }
+}
+
+async function toggleAssignTaskModule() {
+  if (!isYeisonUser()) {
+    promptAdminAssignTaskToggle();
+    return;
+  }
+
+  var newState = !STATE.assignTaskModuleEnabled;
+  STATE.assignTaskModuleEnabled = newState;
+  localStorage.setItem("efi_modulo_asignar_tareas", newState ? "true" : "false");
+
+  updateAssignTaskModuleUI(newState);
+
+  if (newState) {
+    alert("🚀 ¡Panel de Enviar Actividades a Compañero ACTIVADO exitosamente por Administrador Yeison Oyola!\nAhora los colaboradores podrán ver el panel y asignarse tareas.");
+  } else {
+    alert("🔒 Panel de Enviar Actividades a Compañero DESACTIVADO y OCULTO con éxito por Administrador Yeison Oyola.");
+  }
+
+  if (sbClient) {
+    try {
+      await sbClient.from("configuracion").upsert({
+        clave: "modulo_asignar_tareas",
+        valor: newState ? "true" : "false",
+        updated_at: new Date().toISOString()
+      });
+    } catch (err) {
+      console.warn("No se pudo guardar estado del módulo en Supabase:", err);
+    }
+  }
+}
+
+function updateAssignTaskModuleUI(isEnabled) {
+  var isYeison = isYeisonUser();
+
+  // 1. Panel principal de asignación en el modal
+  var panel = document.getElementById("assignTaskModulePanel");
+  if (panel) {
+    panel.style.display = isEnabled ? "flex" : "none";
+  }
+
+  // 2. Control exclusivo dentro del modal para Yeison Oyola
+  var yeisonControlWrap = document.getElementById("yeisonAssignTaskControlWrap");
+  var yeisonModalStatusText = document.getElementById("yeisonModalAssignStatusText");
+  var btnYeisonModalToggle = document.getElementById("btnYeisonModalAssignToggle");
+  if (yeisonControlWrap) {
+    yeisonControlWrap.style.display = isYeison ? "flex" : "none";
+    if (yeisonModalStatusText) {
+      yeisonModalStatusText.textContent = isEnabled 
+        ? "Actualmente: Activado 🟢 (Visible para los colaboradores)" 
+        : "Actualmente: Desactivado ⚪ (Oculto para colaboradores)";
+    }
+    if (btnYeisonModalToggle) {
+      btnYeisonModalToggle.textContent = isEnabled ? "🔒 Desactivar Panel" : "🔓 Activar Panel";
+      btnYeisonModalToggle.style.background = isEnabled ? "#dc2626" : "#2563eb";
+    }
+  }
+
+  // 3. Botón en yeisonBanner
+  var adminBannerText = document.getElementById("adminAssignStateText");
+  var adminBannerBtn = document.getElementById("btnAdminAssignToggle");
+  if (adminBannerText) {
+    adminBannerText.innerHTML = isEnabled ? "Activo 🟢" : "Desactivado ⚪";
+  }
+  if (adminBannerBtn) {
+    if (isEnabled) {
+      adminBannerBtn.style.background = "linear-gradient(135deg, #15803d, #166534)";
+      adminBannerBtn.title = "Desactivar panel de enviar tareas (Admin Yeison)";
+    } else {
+      adminBannerBtn.style.background = "linear-gradient(135deg, #475569, #334155)";
+      adminBannerBtn.title = "Activar panel de enviar tareas (Admin Yeison)";
+    }
+  }
+
+  // 4. Botón en teamModal
+  var teamModalAssignBtn = document.getElementById("teamModalAssignBtn");
+  var teamModalAssignWrap = document.getElementById("teamModalAssignWrap");
+  if (teamModalAssignWrap) {
+    teamModalAssignWrap.style.display = isYeison ? "flex" : "none";
+  }
+  if (teamModalAssignBtn) {
+    if (isEnabled) {
+      teamModalAssignBtn.innerHTML = "🔒 Desactivar Panel";
+      teamModalAssignBtn.style.background = "#dc2626";
+    } else {
+      teamModalAssignBtn.innerHTML = "📤 Activar Panel";
+      teamModalAssignBtn.style.background = "#2563eb";
+    }
   }
 }
 
